@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dinamika Kiriman Maju System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 flex h-screen overflow-hidden">
+
+  <!-- OVERLAY LOGIN SOLID COLOR BIRU DONGKER -->
+  <div id="loginOverlay" class="fixed inset-0 bg-slate-950 z-[100] flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-200">
+      <div class="text-center mb-8">
+        <img src="https://lh3.googleusercontent.com/d/1sIiGOqB0RqVL5HZ6UVBtsXQeDt6Y3X4p" alt="Logo" class="h-16 mx-auto mb-3">
+        <h2 class="text-2xl font-black text-slate-900 tracking-tight">DINAMIKA KIRIMAN</h2>
+        <p class="text-xs text-blue-900 font-extrabold uppercase tracking-widest mt-1">DINAMIKA KIRIMAN MAJU SYSTEM</p>
+      </div>
+
+      <form id="formLogin" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Username</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3.5 top-3.5 text-slate-400"></i>
+            <input type="text" id="loginUsername" required placeholder="Masukkan username" class="w-full pl-10 pr-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-blue-900 text-sm font-medium">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Password</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400"></i>
+            <input type="password" id="loginPassword" required placeholder="Masukkan password" class="w-full pl-10 pr-10 py-2.5 border rounded-xl focus:ring-2 focus:ring-blue-900 text-sm font-medium">
+            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600 focus:outline-none p-1">
+              <i id="toggleEyeIcon" class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="loginAlert" class="hidden p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold"></div>
+
+        <button type="submit" id="btnLoginSubmit" class="w-full py-3 bg-blue-900 hover:bg-slate-900 text-white font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-sm mt-2">
+          <i class="fa-solid fa-right-to-bracket"></i> Masuk ke Sistem
+        </button>
+      </form>
+
+      <div class="mt-8 text-center text-xs text-slate-400 border-t pt-4">
+        &copy; 2026 PT Dinamika Kiriman Maju
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR NAVIGATION MENU -->
+  <aside class="w-64 bg-slate-900 text-white flex flex-col flex-shrink-0 shadow-xl">
+    <div class="p-5 flex items-center gap-3.5 border-b border-slate-800">
+      <img src="https://lh3.googleusercontent.com/d/1sIiGOqB0RqVL5HZ6UVBtsXQeDt6Y3X4p" alt="Logo" class="h-12 w-auto object-contain flex-shrink-0">
+       <div class="overflow-hidden">
+       <h1 class="font-black text-sm tracking-wide leading-tight text-white ">DINAMIKA KIRIMAN MAJU</h1>
+        <span class="text-[10px] text-blue-300 font-semibold uppercase tracking-wider block mt-1 leading-tight">SYSTEM</span>
+      </div>
+    </div>
+
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+      <a href="#" onclick="switchPage('dashboardPage')" id="nav-dashboardPage" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition bg-blue-900 text-white shadow-sm">
+        <i class="fa-solid fa-chart-pie text-amber-400 w-5"></i> Dashboard
+      </a>
+      <a href="#" onclick="switchPage('orderPage')" id="nav-orderPage" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition text-slate-300 hover:bg-slate-800 hover:text-white">
+        <i class="fa-solid fa-boxes-stacked w-5"></i> Order Management
+      </a>
+      
+      <!-- SUB MENU INVOICE LOGISTICS -->
+      <div class="pt-3">
+        <div class="text-[11px] uppercase tracking-wider font-bold text-blue-400 px-4 mb-1">INVOICE MANAGEMENT</div>
+        <a href="#" onclick="switchPage('publishInvoicePage')" id="nav-publishInvoicePage" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition text-slate-300 hover:bg-slate-800 hover:text-white">
+          <i class="fa-solid fa-file-circle-check text-blue-400 w-5"></i> Publish Invoice
+        </a>
+        <a href="#" onclick="switchPage('proformaInvoicePage')" id="nav-proformaInvoicePage" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition text-slate-300 hover:bg-slate-800 hover:text-white">
+          <i class="fa-solid fa-file-lines text-amber-400 w-5"></i> Proforma Invoice
+        </a>
+        <a href="#" onclick="switchPage('createInvoicePage')" id="nav-createInvoicePage" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition text-slate-300 hover:bg-slate-800 hover:text-white">
+          <i class="fa-solid fa-circle-plus text-cyan-400 w-5"></i> Buat Invoice Draf
+        </a>
+      </div>
+
+      <!-- SYSTEM SETTINGS -->
+      <div class="pt-3">
+        <div class="text-[11px] uppercase tracking-wider font-bold text-amber-400 px-4 mb-1">SYSTEM SETTINGS</div>
+        <a href="#" onclick="switchPage('userSettingPage')" id="nav-userSettingPage" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition text-slate-300 hover:bg-slate-800 hover:text-white">
+          <i class="fa-solid fa-users-gear text-amber-400 w-5"></i> User Management
+        </a>
+      </div>
+    </nav>
+
+    <div class="p-4 border-t border-slate-800 text-xs text-slate-300">
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <div id="loggedUserName" class="font-bold text-white text-sm">User DKM</div>
+          <div id="loggedUserRole" class="text-[10px] text-amber-400 font-semibold">Administrator</div>
+        </div>
+        <button onclick="handleLogout()" title="Keluar" class="bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white p-2 rounded-lg transition">
+          <i class="fa-solid fa-power-off"></i>
+        </button>
+      </div>
+      <div class="text-[10px] text-slate-500 text-center mt-2">&copy; 2026 PT Dinamika Kiriman Maju</div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <div class="flex-1 flex flex-col h-full overflow-hidden">
+    
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center flex-shrink-0">
+      <h2 id="pageTitle" class="text-xl font-bold text-slate-800">Dashboard Analytics</h2>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-6">
+
+      <!-- ================= HALAMAN 1: DASHBOARD ================= -->
+      <section id="dashboardPage" class="page-content space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+            <div class="text-slate-500 text-xs font-semibold uppercase">Total Order Seluruhnya</div>
+            <div id="dashTotalOrder" class="text-3xl font-extrabold text-slate-800 mt-1">0</div>
+          </div>
+          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+            <div class="text-slate-500 text-xs font-semibold uppercase">Total Omset / Charge</div>
+            <div id="dashTotalCharge" class="text-2xl font-extrabold text-blue-900 mt-1">Rp 0</div>
+          </div>
+          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+            <div class="text-slate-500 text-xs font-semibold uppercase">Dalam Pengiriman</div>
+            <div id="dashTransit" class="text-3xl font-extrabold text-amber-600 mt-1">0</div>
+          </div>
+          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+            <div class="text-slate-500 text-xs font-semibold uppercase">Terkirim (Delivered)</div>
+            <div id="dashDelivered" class="text-3xl font-extrabold text-emerald-700 mt-1">0</div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b pb-3">
+            <div>
+              <h3 class="font-bold text-slate-800 flex items-center gap-2 text-base">
+                <i class="fa-solid fa-chart-line text-blue-900"></i> Grafik Tren Rekapan Bulanan Per Client (1 Tahun)
+              </h3>
+              <p class="text-xs text-slate-500">Perkembangan total charge & volume order per bulan dari Jan - Des</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <select id="chartMetricSelect" onchange="renderTrendChart()" class="border rounded-lg px-3 py-1.5 text-xs bg-slate-50 font-semibold">
+                <option value="charge">Metrik: Total Charge (Rp)</option>
+                <option value="order">Metrik: Jumlah Order</option>
+              </select>
+              <select id="chartYearSelect" onchange="renderTrendChart()" class="border rounded-lg px-3 py-1.5 text-xs bg-slate-50 font-semibold"></select>
+            </div>
+          </div>
+          <div class="w-full h-80 relative">
+            <canvas id="trendChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-calendar-days text-blue-900"></i> Rekapan Per Bulan (Per Client & Total)
+            </h3>
+            <select id="monthlyPeriodSelect" onchange="renderMonthlySummary()" class="border rounded-lg px-3 py-1.5 text-sm bg-white font-medium"></select>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-100 text-slate-600 border-b">
+                <tr>
+                  <th class="p-3">NAMA CLIENT</th>
+                  <th class="p-3 text-center">TOTAL ORDER</th>
+                  <th class="p-3 text-right">TOTAL CHARGE (RP)</th>
+                  <th class="p-3 text-center">KONTRIBUSI OMSET</th>
+                </tr>
+              </thead>
+              <tbody id="monthlyTableBody" class="divide-y divide-slate-100"></tbody>
+              <tfoot id="monthlyTableFoot" class="bg-blue-50 font-bold text-slate-800"></tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-calendar-check text-blue-900"></i> Rekapan Per Client Per Tahun
+            </h3>
+            <select id="yearlyPeriodSelect" onchange="renderYearlySummary()" class="border rounded-lg px-3 py-1.5 text-sm bg-white font-medium"></select>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-100 text-slate-600 border-b">
+                <tr>
+                  <th class="p-3">NAMA CLIENT</th>
+                  <th class="p-3 text-center">TOTAL ORDER</th>
+                  <th class="p-3 text-right">TOTAL CHARGE (RP)</th>
+                  <th class="p-3 text-center">KONTRIBUSI TAHUNAN</th>
+                </tr>
+              </thead>
+              <tbody id="yearlyTableBody" class="divide-y divide-slate-100"></tbody>
+              <tfoot id="yearlyTableFoot" class="bg-blue-50 font-bold text-slate-800"></tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= HALAMAN 2: ORDER MANAGEMENT ================= -->
+      <section id="orderPage" class="page-content hidden space-y-6">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 justify-between items-center">
+          <div class="relative w-full md:w-96">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400"></i>
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Cari AWB, DO, Client, atau Consignee..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900 text-sm">
+          </div>
+          <div class="flex gap-2 w-full md:w-auto">
+            <select id="pageSizeSelect" onchange="filterTable()" class="border rounded-lg px-3 py-2 text-sm bg-slate-50">
+              <option value="20" selected>Tampilkan: 20 Order</option>
+              <option value="15">Tampilkan: 15 Order</option>
+              <option value="10">Tampilkan: 10 Order</option>
+            </select>
+            <button onclick="loadData()" class="bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg text-sm font-medium border text-slate-600 flex items-center gap-1">
+              <i class="fa-solid fa-rotate-right"></i> Refresh
+            </button>
+            <button onclick="openModal('modalAddOrder')" class="bg-blue-900 hover:bg-slate-900 text-white font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-2 shadow">
+              <i class="fa-solid fa-plus"></i> Order Baru
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-50 text-slate-600 border-b">
+                <tr>
+                  <th class="p-3">NO / AWB</th>
+                  <th class="p-3">TGL ORDER</th>
+                  <th class="p-3">CLIENT</th>
+                  <th class="p-3">RUTE (ORIGIN → DEST)</th>
+                  <th class="p-3">CONSIGNEE</th>
+                  <th class="p-3">SERVICE / BERAT</th>
+                  <th class="p-3">STATUS</th>
+                  <th class="p-3 text-center">AKSI</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+          <div class="p-4 bg-slate-50 border-t flex justify-between items-center text-xs text-slate-500">
+            <div id="paginationInfo">Menampilkan 0 order</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= HALAMAN 3: PUBLISH INVOICING ================= -->
+      <section id="publishInvoicePage" class="page-content hidden space-y-6">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
+          <div class="relative w-full md:w-96">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400"></i>
+            <input type="text" id="pubSearchInput" onkeyup="renderPublishInvoiceTable()" placeholder="Filter Publish Invoice..." class="w-full pl-10 pr-4 py-2 border rounded-lg text-sm">
+          </div>
+          <button onclick="loadData()" class="bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg text-sm font-medium border">
+            <i class="fa-solid fa-rotate-right"></i> Refresh
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="p-4 bg-slate-900 text-white font-bold text-sm flex items-center gap-2">
+            <i class="fa-solid fa-file-circle-check text-amber-400"></i> List Data Publish Invoice Resmi
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-50 text-slate-600 border-b">
+                <tr>
+                  <th class="p-3">NO</th>
+                  <th class="p-3">INVOICE NO</th>
+                  <th class="p-3">TANGGAL</th>
+                  <th class="p-3">CLIENT</th>
+                  <th class="p-3 text-center">JUMLAH ORDER</th>
+                  <th class="p-3 text-right">TOTAL (RP)</th>
+                  <th class="p-3 text-center">ACTION</th>
+                </tr>
+              </thead>
+              <tbody id="publishInvoiceTableBody" class="divide-y divide-slate-100">
+                <tr><td colspan="7" class="text-center p-6 text-slate-400">Memuat data publish invoice...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= HALAMAN 4: PROFORMA INVOICE (DRAF) ================= -->
+      <section id="proformaInvoicePage" class="page-content hidden space-y-6">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
+          <div class="relative w-full md:w-96">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400"></i>
+            <input type="text" id="profSearchInput" onkeyup="renderProformaInvoiceTable()" placeholder="Filter Proforma Invoice..." class="w-full pl-10 pr-4 py-2 border rounded-lg text-sm">
+          </div>
+          <button onclick="switchPage('createInvoicePage')" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Buat Proforma Baru
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="p-4 bg-slate-900 text-white font-bold text-sm flex items-center gap-2">
+            <i class="fa-solid fa-file-lines text-amber-300"></i> List Data Proforma Invoice (Draf Penagihan)
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-50 text-slate-600 border-b">
+                <tr>
+                  <th class="p-3">NO</th>
+                  <th class="p-3">INVOICE NO</th>
+                  <th class="p-3">TANGGAL</th>
+                  <th class="p-3">CLIENT</th>
+                  <th class="p-3 text-center">JUMLAH ORDER</th>
+                  <th class="p-3 text-right">TOTAL (RP)</th>
+                  <th class="p-3 text-center">ACTION</th>
+                </tr>
+              </thead>
+              <tbody id="proformaInvoiceTableBody" class="divide-y divide-slate-100">
+                <tr><td colspan="7" class="text-center p-6 text-slate-400">Memuat data proforma invoice...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= HALAMAN 5: BUAT PROFORMA INVOICE ================= -->
+      <section id="createInvoicePage" class="page-content hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center border-b pb-4">
+            <div>
+              <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-receipt text-blue-900"></i> Form Buat Proforma Invoice Baru
+              </h3>
+              <p class="text-xs text-slate-500">Pilih Client untuk menandai order yang akan dimasukkan ke Proforma Draf</p>
+            </div>
+            <button onclick="submitNewInvoice()" id="btnSubmitInv" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-5 py-2 rounded-lg shadow flex items-center gap-2 text-sm">
+              <i class="fa-solid fa-floppy-disk"></i> Simpan Ke Proforma Invoice
+            </button>
+          </div>
+
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+              <div class="md:col-span-4">
+                <label class="text-xs font-semibold uppercase text-slate-500 block mb-1">Pilih Client / Pengirim</label>
+                <select id="newInvClientSelect" onchange="renderUninvoicedOrdersForClient()" class="w-full border rounded-lg p-2 text-sm bg-white font-semibold text-slate-800 truncate">
+                </select>
+              </div>
+              <div class="md:col-span-3">
+                <label class="text-xs font-semibold uppercase text-slate-500 block mb-1">Nomor Proforma</label>
+                <input type="text" id="newInvNumberInput" placeholder="Contoh: INV-033226014" class="w-full border rounded-lg p-2 text-sm bg-white font-bold text-blue-900">
+              </div>
+              <div class="md:col-span-2">
+                <label class="text-xs font-semibold uppercase text-slate-500 block mb-1">Tgl Proforma</label>
+                <input type="text" id="newInvDateInput" onchange="calculateDueDateFromDays()" placeholder="dd/mm/yyyy" class="w-full border rounded-lg p-2 text-sm bg-white font-medium">
+              </div>
+              <div class="md:col-span-3">
+                <label class="text-xs font-semibold uppercase text-slate-500 block mb-1">Term (Jumlah Hari)</label>
+                <div class="flex items-center gap-2">
+                  <div class="relative flex-1">
+                    <input type="number" id="newInvDaysInput" oninput="calculateDueDateFromDays()" value="30" min="0" placeholder="30" class="w-full border rounded-lg p-2 pr-10 text-sm bg-white font-bold text-slate-800">
+                    <span class="absolute right-2 top-2 text-xs text-slate-400 font-semibold">Hari</span>
+                  </div>
+                  <div id="dueDatePreviewText" class="text-xs text-blue-900 font-bold whitespace-nowrap">Due: -</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 pt-2 border-t border-slate-200/60">
+              <div class="md:col-span-6">
+                <label class="text-xs font-semibold uppercase text-slate-500 block mb-1">Order Type</label>
+                <select id="newInvOrderTypeSelect" class="w-full border rounded-lg p-2 text-sm bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-blue-900">
+                  <option value="JASA PENGURUSAN TRANSPORTASI - ETA TRUCKING">JASA PENGURUSAN TRANSPORTASI - ETA TRUCKING</option>
+                  <option value="JASA PENGURUSAN TRANSPORTASI - ETA">JASA PENGURUSAN TRANSPORTASI - ETA</option>
+                  <option value="JASA PENGURUSAN TRANSPORTASI - REGULER">JASA PENGURUSAN TRANSPORTASI - REGULER</option>
+                  <option value="JASA PENGURUSAN TRANSPORTASI - TRUCKING">JASA PENGURUSAN TRANSPORTASI - TRUCKING</option>
+                </select>
+              </div>
+              <div class="md:col-span-3">
+                <label class="text-xs font-semibold uppercase text-slate-500 block mb-1">Pajak (VAT)</label>
+                <select id="newInvVatSelect" class="w-full border rounded-lg p-2 text-sm bg-white font-semibold text-slate-800">
+                  <option value="0">Non PPN (0%)</option>
+                  <option value="1.1">PPN 1,1%</option>
+                  <option value="11">PPN 11%</option>
+                </select>
+              </div>
+              <div class="md:col-span-3">
+                <label class="text-xs font-semibold uppercase text-slate-500 block mb-1">Diskon (Rp)</label>
+                <input type="number" id="newInvDiscountInput" value="0" min="0" placeholder="0" class="w-full border rounded-lg p-2 text-sm bg-white font-bold text-slate-800">
+              </div>
+            </div>
+          </div>
+
+          <div class="border rounded-xl overflow-hidden mt-4">
+            <div class="p-3 bg-blue-50 border-b flex justify-between items-center text-xs">
+              <span class="font-bold text-blue-950 flex items-center gap-2">
+                <input type="checkbox" id="checkAllOrders" onchange="toggleSelectAllUninvoiced(this)" class="w-4 h-4 rounded text-blue-900">
+                Pilih Semua Order Uninvoiced
+              </span>
+              <span id="selectedCountText" class="font-semibold text-blue-900">0 Order Dipilih (Total: Rp 0)</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead class="bg-slate-100 text-slate-600 border-b">
+                  <tr>
+                    <th class="p-3 text-center">PILIH</th>
+                    <th class="p-3">AWB / DO</th>
+                    <th class="p-3">TGL ORDER</th>
+                    <th class="p-3">CONSIGNEE</th>
+                    <th class="p-3">RUTE</th>
+                    <th class="p-3 text-right">CHARGE (RP)</th>
+                  </tr>
+                </thead>
+                <tbody id="uninvoicedOrdersTableBody" class="divide-y divide-slate-100">
+                  <tr><td colspan="6" class="text-center p-6 text-slate-400">Silakan pilih Client di atas.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= HALAMAN 6: USER SETTING PAGE ================= -->
+      <section id="userSettingPage" class="page-content hidden space-y-6">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-slate-800 text-base">User Management System</h3>
+            <p class="text-xs text-slate-500">Kelola daftar akun pengguna dan hak akses ke sistem</p>
+          </div>
+          <button onclick="openModal('modalAddUser')" class="bg-blue-900 hover:bg-slate-900 text-white font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-2 shadow">
+            <i class="fa-solid fa-user-plus"></i> Tambah User Baru
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="p-4 bg-slate-900 text-white font-bold text-sm flex items-center gap-2">
+            <i class="fa-solid fa-users text-amber-400"></i> Daftar Akun Pengguna Terdaftar
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-50 text-slate-600 border-b">
+                <tr>
+                  <th class="p-3">NO</th>
+                  <th class="p-3">USERNAME</th>
+                  <th class="p-3">NAMA LENGKAP</th>
+                  <th class="p-3">ROLE</th>
+                  <th class="p-3 text-center">AKSI</th>
+                </tr>
+              </thead>
+              <tbody id="userTableBody" class="divide-y divide-slate-100">
+                <tr><td colspan="5" class="text-center p-6 text-slate-400">Memuat data user...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL 1: TAMBAH ORDER BARU -->
+  <div id="modalAddOrder" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="bg-blue-900 text-white p-5 flex justify-between items-center">
+        <h3 class="text-lg font-bold"><i class="fa-solid fa-plus-circle mr-2"></i> Input Order Kiriman Baru</h3>
+        <button onclick="closeModal('modalAddOrder')" class="text-white hover:text-amber-400"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <form id="formAddOrder" onsubmit="submitAddOrder(event)" class="p-6 overflow-y-auto space-y-4 text-sm flex-1">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold mb-1">Nomor DO Customer</label>
+            <input type="text" id="addDoCustomer" required class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Nomor AWB (Opsional)</label>
+            <input type="text" id="addAwbNumber" placeholder="Otomatis jika kosong" class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Client / Pengirim</label>
+            <input type="text" id="addClientName" required class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Layanan (Service)</label>
+            <select id="addService" class="w-full border rounded-lg p-2">
+              <option value="REGULER">REGULER</option>
+              <option value="CHARTER BV">CHARTER BV</option>
+              <option value="EXPRESS">EXPRESS</option>
+              <option value="TRUCKING">TRUCKING</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Kota Origin</label>
+            <input type="text" id="addOrigin" value="JAKARTA" required class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Kota Tujuan (Destination)</label>
+            <input type="text" id="addDestination" required class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Nama Consignee (Penerima)</label>
+            <input type="text" id="addConsigneeName" required class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Alamat Penerima</label>
+            <input type="text" id="addConsigneeAddress" class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Berat (Kg)</label>
+            <input type="number" id="addWeight" value="1" step="0.1" required class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Coly / Jumlah Koli</label>
+            <input type="number" id="addColy" value="1" required class="w-full border rounded-lg p-2">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block font-semibold mb-1">Biaya Charge Tagihan (Rp)</label>
+            <input type="number" id="addCharge" value="0" required class="w-full border rounded-lg p-2 font-bold text-blue-900">
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-4 border-t">
+          <button type="button" onclick="closeModal('modalAddOrder')" class="px-4 py-2 border rounded-lg">Batal</button>
+          <button type="submit" id="btnSaveAddOrder" class="px-5 py-2 bg-blue-900 text-white font-bold rounded-lg hover:bg-slate-900">Simpan Order</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: EDIT ORDER MANAGEMENT -->
+  <div id="modalUpdateOrder" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="bg-blue-900 text-white p-5 flex justify-between items-center">
+        <h3 id="editModalTitle" class="text-lg font-bold"><i class="fa-solid fa-pen-to-square mr-2"></i> Edit Data Order</h3>
+        <button onclick="closeModal('modalUpdateOrder')" class="text-white hover:text-amber-400"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <form id="formUpdateOrder" onsubmit="submitUpdateOrder(event)" class="p-6 overflow-y-auto space-y-4 text-sm flex-1">
+        <input type="hidden" id="editRowIndex">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold mb-1">DO Customer</label>
+            <input type="text" id="editDoCustomer" class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Status Pengiriman</label>
+            <select id="editTrackTrace" class="w-full border rounded-lg p-2 font-bold text-blue-900">
+              <option value="New Order">New Order</option>
+              <option value="To Hub">To Hub</option>
+              <option value="On Delivery">On Delivery</option>
+              <option value="Delivered">Delivered</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Client Name</label>
+            <input type="text" id="editClientName" class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Consignee Name</label>
+            <input type="text" id="editConsigneeName" class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Origin</label>
+            <input type="text" id="editOrigin" class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Destination</label>
+            <input type="text" id="editDestination" class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Berat (Kg)</label>
+            <input type="number" id="editWeight" step="0.1" class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Charge (Rp)</label>
+            <input type="number" id="editCharge" class="w-full border rounded-lg p-2 font-bold text-blue-900">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Penerima (Receiver Name)</label>
+            <input type="text" id="editReceiverName" class="w-full border rounded-lg p-2">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Vendor Courier</label>
+            <input type="text" id="editVendorBy" class="w-full border rounded-lg p-2">
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-4 border-t">
+          <button type="button" onclick="closeModal('modalUpdateOrder')" class="px-4 py-2 border rounded-lg">Batal</button>
+          <button type="submit" id="btnSaveUpdateOrder" class="px-5 py-2 bg-blue-900 text-white font-bold rounded-lg hover:bg-slate-900">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL EDIT PROFORMA INVOICE -->
+  <div id="modalEditProforma" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div class="bg-amber-500 text-slate-900 p-5 flex justify-between items-center flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="bg-slate-900 text-amber-400 p-2 rounded-lg font-bold"><i class="fa-solid fa-pen-to-square"></i></div>
+          <div>
+            <h3 id="editProfTitle" class="text-xl font-extrabold text-slate-900">Edit Proforma Invoice</h3>
+            <p class="text-xs text-slate-800">Keluarkan atau tambahkan order kiriman ke dalam Proforma ini</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modalEditProforma')" class="text-slate-800 hover:text-black bg-amber-400 p-2 rounded-lg"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 bg-slate-50 text-sm flex-1">
+        <input type="hidden" id="editProfInvNumber">
+        <input type="hidden" id="editProfClientName">
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div>
+            <label class="text-xs font-semibold uppercase text-slate-500 block mb-1">Tanggal Proforma</label>
+            <input type="text" id="editProfDate" placeholder="dd/mm/yyyy" class="w-full border rounded-lg p-2 text-sm bg-white font-medium">
+          </div>
+          <div>
+            <label class="text-xs font-semibold uppercase text-slate-500 block mb-1">Order Type</label>
+            <select id="editProfOrderType" class="w-full border rounded-lg p-2 text-sm bg-white font-semibold text-slate-800">
+              <option value="JASA PENGURUSAN TRANSPORTASI - ETA TRUCKING">JASA PENGURUSAN TRANSPORTASI - ETA TRUCKING</option>
+              <option value="JASA PENGURUSAN TRANSPORTASI - ETA">JASA PENGURUSAN TRANSPORTASI - ETA</option>
+              <option value="JASA PENGURUSAN TRANSPORTASI - REGULER">JASA PENGURUSAN TRANSPORTASI - REGULER</option>
+              <option value="JASA PENGURUSAN TRANSPORTASI - TRUCKING">JASA PENGURUSAN TRANSPORTASI - TRUCKING</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold uppercase text-slate-500 block mb-1">Pajak (VAT)</label>
+            <select id="editProfVat" class="w-full border rounded-lg p-2 text-sm bg-white font-semibold text-slate-800">
+              <option value="0">Non PPN (0%)</option>
+              <option value="1.1">PPN 1,1%</option>
+              <option value="11">PPN 11%</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold uppercase text-slate-500 block mb-1">Diskon (Rp)</label>
+            <input type="number" id="editProfDiscount" value="0" min="0" class="w-full border rounded-lg p-2 text-sm bg-white font-bold text-slate-800">
+          </div>
+        </div>
+
+        <div class="border rounded-xl overflow-hidden bg-white shadow-sm">
+          <div class="p-3 bg-amber-50 border-b flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-amber-600"></i> Kelola Order Kiriman Proforma
+            </span>
+            <span id="editProfSummaryText" class="font-bold text-amber-800">0 Order Dipilih</span>
+          </div>
+          <div class="overflow-x-auto max-h-72">
+            <table class="w-full text-left text-sm border-collapse">
+              <thead class="bg-slate-100 text-slate-600 border-b sticky top-0 z-10">
+                <tr>
+                  <th class="p-2.5 text-center">STATUS</th>
+                  <th class="p-2.5">AWB / DO</th>
+                  <th class="p-2.5">TGL ORDER</th>
+                  <th class="p-2.5">CONSIGNEE</th>
+                  <th class="p-2.5">RUTE</th>
+                  <th class="p-2.5 text-right">CHARGE (RP)</th>
+                </tr>
+              </thead>
+              <tbody id="editProfOrdersTableBody" class="divide-y divide-slate-100">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center bg-white p-4 border-t border-slate-200 flex-shrink-0">
+        <button type="button" onclick="closeModal('modalEditProforma')" class="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-slate-100">Batal</button>
+        <button type="button" id="btnSaveEditProf" onclick="saveProformaEdit()" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-lg text-sm shadow flex items-center gap-2">
+          <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Proforma
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: TAMBAH USER BARU -->
+  <div id="modalAddUser" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col">
+      <div class="bg-blue-900 text-white p-5 flex justify-between items-center">
+        <h3 class="text-lg font-bold"><i class="fa-solid fa-user-plus mr-2"></i> Tambah User Baru</h3>
+        <button onclick="closeModal('modalAddUser')" class="text-white hover:text-amber-400"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <form id="formAddUser" onsubmit="submitAddUser(event)" class="p-6 space-y-4 text-sm">
+        <div>
+          <label class="block font-semibold mb-1">Username</label>
+          <input type="text" id="addUserUsername" required placeholder="Contoh: userdkm" class="w-full border rounded-lg p-2.5">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Password</label>
+          <input type="password" id="addUserPassword" required placeholder="Masukkan password" class="w-full border rounded-lg p-2.5">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Nama Lengkap</label>
+          <input type="text" id="addUserFullName" required placeholder="Contoh: Ahmad Finance" class="w-full border rounded-lg p-2.5">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Role / Hak Akses</label>
+          <select id="addUserRole" class="w-full border rounded-lg p-2.5 font-semibold text-slate-800">
+            <option value="Admin">Admin</option>
+            <option value="Finance">Finance</option>
+            <option value="Ops">Operations</option>
+            <option value="Staff">Staff</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2 pt-4 border-t mt-4">
+          <button type="button" onclick="closeModal('modalAddUser')" class="px-4 py-2 border rounded-lg">Batal</button>
+          <button type="submit" id="btnSaveAddUser" class="px-5 py-2 bg-blue-900 text-white font-bold rounded-lg hover:bg-slate-900">Simpan User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC (100% FIXED UNTUK GITHUB PAGES / HOSTING LUAR) -->
+  <script>
+    let rawData = [];
+    let groupedInvoices = [];
+    let summaryData = { monthly: {}, yearly: {}, chartTrends: {} };
+    let filteredData = [];
+    let currentPage = 1;
+    let myTrendChart = null;
+    let currentUser = null; 
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+    const chartColors = ['#1e3a8a', '#f59e0b', '#4f46e5', '#ec4899', '#06b6d4', '#f97316', '#64748b', '#84cc16'];
+
+    // URL Web App Google Apps Script
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwYqy_VGjIxs7Aj-nhc743rnrZaMhSW_KF9gbMfjoceV8GxFEWrDsFsXMvLOdPRCFdP/exec";
+
+    // --- FUNGSI HELPER API FETCH ---
+    function apiGet(action) {
+      return fetch(`${GAS_API_URL}?action=${action}`)
+        .then(res => res.json());
+    }
+
+    function apiPost(action, dataObj = {}) {
+      const payload = Object.assign({ action: action }, dataObj);
+      return fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      }).then(res => res.json());
+    }
+
+    window.onload = function() {
+      checkUserSession();
+    };
+
+    function togglePasswordVisibility() {
+      const passInput = document.getElementById('loginPassword');
+      const eyeIcon = document.getElementById('toggleEyeIcon');
+      if (!passInput || !eyeIcon) return;
+
+      if (passInput.type === 'password') {
+        passInput.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+      } else {
+        passInput.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+      }
+    }
+
+    function checkUserSession() {
+      let savedUser = null;
+      try {
+        savedUser = localStorage.getItem('dkm_logged_user');
+      } catch(e) {}
+
+      if (savedUser || currentUser) {
+        try {
+          const userObj = currentUser || JSON.parse(savedUser);
+          document.getElementById('loggedUserName').innerText = userObj.fullName;
+          document.getElementById('loggedUserRole').innerText = userObj.role;
+          document.getElementById('loginOverlay').classList.add('hidden');
+          loadData();
+        } catch(e) {
+          showLoginOverlay();
+        }
+      } else {
+        showLoginOverlay();
+      }
+    }
+
+    function showLoginOverlay() {
+      document.getElementById('formLogin').reset();
+      document.getElementById('loginAlert').classList.add('hidden');
+      document.getElementById('loginOverlay').classList.remove('hidden');
+    }
+
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const u = document.getElementById('loginUsername').value;
+      const p = document.getElementById('loginPassword').value;
+
+      const btn = document.getElementById('btnLoginSubmit');
+      const alertEl = document.getElementById('loginAlert');
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa...`;
+      alertEl.classList.add('hidden');
+
+      apiPost('login', { username: u, password: p })
+        .then(res => {
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> Masuk ke Sistem`;
+
+          if (res.status === 'success') {
+            currentUser = res.user;
+            try {
+              localStorage.setItem('dkm_logged_user', JSON.stringify(res.user));
+            } catch(err) {}
+
+            document.getElementById('loggedUserName').innerText = res.user.fullName;
+            document.getElementById('loggedUserRole').innerText = res.user.role;
+            document.getElementById('loginOverlay').classList.add('hidden');
+            loadData();
+          } else {
+            alertEl.innerText = res.message;
+            alertEl.classList.remove('hidden');
+          }
+        })
+        .catch(err => {
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> Masuk ke Sistem`;
+          alertEl.innerText = 'Terjadi kesalahan sistem: ' + (err ? err.message : err);
+          alertEl.classList.remove('hidden');
+        });
+    }
+
+    function handleLogout() {
+      if (confirm('Apakah Anda yakin ingin keluar dari sistem?')) {
+        currentUser = null;
+        try {
+          localStorage.removeItem('dkm_logged_user');
+        } catch(e) {}
+        
+        document.getElementById('loggedUserName').innerText = 'User DKM';
+        document.getElementById('loggedUserRole').innerText = 'Administrator';
+        showLoginOverlay();
+      }
+    }
+
+    function switchPage(pageId) {
+      document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(pageId).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-item').forEach(el => {
+        el.classList.remove('bg-blue-900', 'text-white', 'shadow-sm');
+        el.classList.add('text-slate-300');
+      });
+
+      const activeNav = document.getElementById('nav-' + pageId);
+      if (activeNav) {
+        activeNav.classList.add('bg-blue-900', 'text-white', 'shadow-sm');
+        activeNav.classList.remove('text-slate-300');
+      }
+
+      if (pageId === 'dashboardPage') {
+        document.getElementById('pageTitle').innerText = 'Dashboard Analytics';
+        setTimeout(renderTrendChart, 100);
+      } else if (pageId === 'orderPage') {
+        document.getElementById('pageTitle').innerText = 'Order Management';
+      } else if (pageId === 'publishInvoicePage') {
+        document.getElementById('pageTitle').innerText = 'Publish Invoice (Resmi)';
+        renderPublishInvoiceTable();
+      } else if (pageId === 'proformaInvoicePage') {
+        document.getElementById('pageTitle').innerText = 'Proforma Invoice (Draf)';
+        renderProformaInvoiceTable();
+      } else if (pageId === 'createInvoicePage') {
+        document.getElementById('pageTitle').innerText = 'Buat Proforma Invoice';
+        initCreateInvoicePage();
+      } else if (pageId === 'userSettingPage') {
+        document.getElementById('pageTitle').innerText = 'User Management';
+        loadUsersTable();
+      }
+    }
+
+    function loadData() {
+      apiGet('getOrders')
+        .then(response => onDataLoaded(response))
+        .catch(err => alert("Eror API: " + err));
+    }
+
+    function onDataLoaded(response) {
+      if (!response || response.status === "error") {
+        alert("Server Error: " + (response ? response.message : "Gagal terhubung ke Google Apps Script"));
+        return;
+      }
+      rawData = response.data || [];
+      groupedInvoices = response.groupedInvoices || [];
+      summaryData = response.summary || { monthly: {}, yearly: {}, chartTrends: {} };
+
+      updateKPIs(rawData);
+      initDashboardDropdowns();
+      filterTable();
+      renderPublishInvoiceTable();
+      renderProformaInvoiceTable();
+      initCreateInvoicePage();
+    }
+
+    function loadUsersTable() {
+      apiGet('getUsers')
+        .then(res => {
+          const tbody = document.getElementById('userTableBody');
+          if (res.status === 'success' && res.users) {
+            if (res.users.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="5" class="text-center p-6 text-slate-400">Belum ada data user.</td></tr>';
+              return;
+            }
+
+            tbody.innerHTML = res.users.map((u, i) => `
+              <tr class="hover:bg-slate-50 transition">
+                <td class="p-3 font-medium text-slate-500">${i + 1}.</td>
+                <td class="p-3 font-bold text-blue-900">${u.username}</td>
+                <td class="p-3 font-semibold text-slate-800">${u.fullName}</td>
+                <td class="p-3"><span class="bg-blue-100 text-blue-900 font-bold px-2.5 py-1 rounded-full text-xs">${u.role}</span></td>
+                <td class="p-3 text-center">
+                  <button onclick="handleDeleteUser(${u.rowIndex}, '${u.username}')" title="Hapus User" class="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white p-1.5 rounded-lg text-xs font-bold transition">
+                    <i class="fa-solid fa-trash-can"></i> Hapus
+                  </button>
+                </td>
+              </tr>
+            `).join('');
+          } else {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center p-6 text-red-400">Gagal memuat daftar user.</td></tr>';
+          }
+        })
+        .catch(err => alert('Eror memuat user: ' + err));
+    }
+
+    function submitAddUser(e) {
+      e.preventDefault();
+      const userData = {
+        username: document.getElementById('addUserUsername').value,
+        password: document.getElementById('addUserPassword').value,
+        fullName: document.getElementById('addUserFullName').value,
+        role: document.getElementById('addUserRole').value
+      };
+
+      const btn = document.getElementById('btnSaveAddUser');
+      btn.disabled = true;
+      btn.innerText = 'Menyimpan...';
+
+      apiPost('addUser', { userData: userData })
+        .then(res => {
+          btn.disabled = false;
+          btn.innerText = 'Simpan User';
+          if (res.status === 'success') {
+            alert(res.message);
+            closeModal('modalAddUser');
+            document.getElementById('formAddUser').reset();
+            loadUsersTable();
+          } else {
+            alert('Gagal: ' + res.message);
+          }
+        })
+        .catch(err => {
+          btn.disabled = false;
+          btn.innerText = 'Simpan User';
+          alert('Eror: ' + err.message);
+        });
+    }
+
+    function handleDeleteUser(rowIndex, username) {
+      if (!confirm(`Apakah Anda yakin ingin menghapus user '${username}'?`)) return;
+
+      apiPost('deleteUser', { rowIndex: rowIndex })
+        .then(res => {
+          if (res.status === 'success') {
+            alert(res.message);
+            loadUsersTable();
+          } else {
+            alert('Gagal menghapus: ' + res.message);
+          }
+        })
+        .catch(err => alert('Eror: ' + err));
+    }
+
+    function submitAddOrder(e) {
+      e.preventDefault();
+      const formData = {
+        doCustomer: document.getElementById('addDoCustomer').value,
+        awbNumber: document.getElementById('addAwbNumber').value,
+        clientName: document.getElementById('addClientName').value,
+        service: document.getElementById('addService').value,
+        origin: document.getElementById('addOrigin').value,
+        destination: document.getElementById('addDestination').value,
+        consigneeName: document.getElementById('addConsigneeName').value,
+        consigneeAddress: document.getElementById('addConsigneeAddress').value,
+        weight: document.getElementById('addWeight').value,
+        coly: document.getElementById('addColy').value,
+        charge: document.getElementById('addCharge').value
+      };
+
+      const btn = document.getElementById('btnSaveAddOrder');
+      btn.disabled = true;
+      btn.innerText = 'Menyimpan...';
+
+      apiPost('addOrder', { formData: formData })
+        .then(res => {
+          btn.disabled = false;
+          btn.innerText = 'Simpan Order';
+          if (res.status === 'success') {
+            alert(res.message);
+            closeModal('modalAddOrder');
+            document.getElementById('formAddOrder').reset();
+            loadData();
+          } else {
+            alert('Gagal: ' + res.message);
+          }
+        })
+        .catch(err => {
+          btn.disabled = false;
+          btn.innerText = 'Simpan Order';
+          alert('Eror: ' + err.message);
+        });
+    }
+
+    function openUpdateModal(rowIndex) {
+      const item = rawData.find(d => Number(d.rowIndex) === Number(rowIndex));
+      if (!item) return;
+
+      document.getElementById('editRowIndex').value = item.rowIndex;
+      document.getElementById('editDoCustomer').value = item.doCustomer || '';
+      document.getElementById('editTrackTrace').value = item.trackTrace || 'New Order';
+      document.getElementById('editClientName').value = item.clientName || '';
+      document.getElementById('editConsigneeName').value = item.consigneeName || '';
+      document.getElementById('editOrigin').value = item.origin || '';
+      document.getElementById('editDestination').value = item.destination || '';
+      document.getElementById('editWeight').value = item.weight || 0;
+      document.getElementById('editCharge').value = item.charge || 0;
+      document.getElementById('editReceiverName').value = item.receiverName || '';
+      document.getElementById('editVendorBy').value = item.vendorBy || '';
+
+      document.getElementById('editModalTitle').innerText = `Edit Order ${item.awbNumber}`;
+      openModal('modalUpdateOrder');
+    }
+
+    function submitUpdateOrder(e) {
+      e.preventDefault();
+      const formData = {
+        rowIndex: document.getElementById('editRowIndex').value,
+        doCustomer: document.getElementById('editDoCustomer').value,
+        trackTrace: document.getElementById('editTrackTrace').value,
+        clientName: document.getElementById('editClientName').value,
+        consigneeName: document.getElementById('editConsigneeName').value,
+        origin: document.getElementById('editOrigin').value,
+        destination: document.getElementById('editDestination').value,
+        weight: document.getElementById('editWeight').value,
+        charge: document.getElementById('editCharge').value,
+        receiverName: document.getElementById('editReceiverName').value,
+        vendorBy: document.getElementById('editVendorBy').value
+      };
+
+      const btn = document.getElementById('btnSaveUpdateOrder');
+      btn.disabled = true;
+      btn.innerText = 'Menyimpan...';
+
+      apiPost('updateOrder', { formData: formData })
+        .then(res => {
+          btn.disabled = false;
+          btn.innerText = 'Simpan Perubahan';
+          if (res.status === 'success') {
+            alert(res.message);
+            closeModal('modalUpdateOrder');
+            loadData();
+          } else {
+            alert('Gagal: ' + res.message);
+          }
+        })
+        .catch(err => {
+          btn.disabled = false;
+          btn.innerText = 'Simpan Perubahan';
+          alert('Eror: ' + err.message);
+        });
+    }
+
+    function renderPublishInvoiceTable() {
+      const query = (document.getElementById('pubSearchInput')?.value || '').toLowerCase();
+      const publishedList = groupedInvoices.filter(inv => inv.invoiceStatus === 'PUBLISHED');
+      const filtered = publishedList.filter(inv => (inv.invoiceNumber || '').toLowerCase().includes(query) || (inv.clientName || '').toLowerCase().includes(query));
+
+      const tbody = document.getElementById('publishInvoiceTableBody');
+      if (!filtered || filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center p-6 text-slate-400">Tidak ada data Publish Invoice.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((inv, i) => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3 font-medium text-slate-500">${i + 1}.</td>
+          <td class="p-3 font-bold text-blue-900">${inv.invoiceNumber}</td>
+          <td class="p-3 text-slate-600">${inv.invoiceDate || '-'}</td>
+          <td class="p-3 font-semibold">${inv.clientName}</td>
+          <td class="p-3 text-center"><span class="bg-blue-100 text-blue-900 px-2.5 py-1 rounded-full text-xs font-bold">${inv.totalOrder} Order</span></td>
+          <td class="p-3 text-right font-extrabold text-blue-900">Rp ${Number(inv.totalCharge).toLocaleString('id-ID')}</td>
+          <td class="p-3 text-center">
+            <div class="flex items-center justify-center gap-1.5">
+              <button onclick="openGroupedInvoiceDetail('${inv.invoiceNumber}')" title="Cetak / View PDF" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow flex items-center gap-1">
+                <i class="fa-solid fa-print"></i> Cetak / View
+              </button>
+              <button onclick="handleUnpublishAction('${inv.invoiceNumber}')" title="Kembalikan ke Proforma Draf" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-xs px-3 py-1.5 rounded-lg shadow flex items-center gap-1">
+                <i class="fa-solid fa-rotate-left"></i> Unpublish
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderProformaInvoiceTable() {
+      const query = (document.getElementById('profSearchInput')?.value || '').toLowerCase();
+      const proformaList = groupedInvoices.filter(inv => inv.invoiceStatus === 'PROFORMA');
+      const filtered = proformaList.filter(inv => (inv.invoiceNumber || '').toLowerCase().includes(query) || (inv.clientName || '').toLowerCase().includes(query));
+
+      const tbody = document.getElementById('proformaInvoiceTableBody');
+      if (!filtered || filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center p-6 text-slate-400 font-medium">Tidak ada Draf Proforma Invoice.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((inv, i) => `
+        <tr class="hover:bg-amber-50/50 transition">
+          <td class="p-3 font-medium text-slate-500">${i + 1}.</td>
+          <td class="p-3 font-bold text-amber-700">${inv.invoiceNumber} <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px]">DRAF</span></td>
+          <td class="p-3 text-slate-600">${inv.invoiceDate || '-'}</td>
+          <td class="p-3 font-semibold">${inv.clientName}</td>
+          <td class="p-3 text-center"><span class="bg-indigo-100 text-indigo-800 px-2.5 py-1 rounded-full text-xs font-bold">${inv.totalOrder} Order</span></td>
+          <td class="p-3 text-right font-extrabold text-slate-800">Rp ${Number(inv.totalCharge).toLocaleString('id-ID')}</td>
+          <td class="p-3 text-center">
+            <div class="flex items-center justify-center gap-1.5">
+              <button onclick="openGroupedInvoiceDetail('${inv.invoiceNumber}')" title="Pratinjau" class="bg-blue-600 hover:bg-blue-700 text-white p-1.5 rounded-lg text-xs">
+                <i class="fa-solid fa-print"></i>
+              </button>
+              <button onclick="openEditProformaModal('${inv.invoiceNumber}')" title="Edit Isi Proforma Invoice" class="bg-amber-500 hover:bg-amber-600 text-slate-900 p-1.5 rounded-lg text-xs font-bold">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              <button onclick="handlePublishAction('${inv.invoiceNumber}')" title="Publish Menjadi Invoice Resmi" class="bg-blue-900 hover:bg-slate-900 text-white p-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
+                <i class="fa-solid fa-upload"></i> Publish
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function handlePublishAction(invNumber) {
+      if (!confirm(`Apakah Anda yakin ingin mempublikasikan Proforma Invoice ${invNumber} menjadi Invoice Resmi?`)) return;
+
+      apiPost('publishInvoice', { invNumber: invNumber })
+        .then(res => {
+          if (res.status === 'success') {
+            alert(res.message);
+            loadData();
+            switchPage('publishInvoicePage');
+          } else {
+            alert('Gagal Publish: ' + res.message);
+          }
+        })
+        .catch(err => alert('Eror: ' + err));
+    }
+
+    function handleUnpublishAction(invNumber) {
+      if (!confirm(`Apakah Anda yakin ingin mengembalikan Invoice ${invNumber} menjadi Proforma Draf?\n\nInvoice ini akan dapat diedit kembali.`)) {
+        return;
+      }
+
+      apiPost('unpublishInvoice', { invNumber: invNumber })
+        .then(res => {
+          if (res.status === 'success') {
+            alert(res.message);
+            loadData();
+            switchPage('proformaInvoicePage');
+          } else {
+            alert('Gagal Unpublish: ' + res.message);
+          }
+        })
+        .catch(err => alert('Eror: ' + err));
+    }
+
+    function openEditProformaModal(invNumber) {
+      const invObj = groupedInvoices.find(i => i.invoiceNumber === invNumber);
+      if (!invObj) return;
+
+      document.getElementById('editProfInvNumber').value = invNumber;
+      document.getElementById('editProfTitle').innerText = `Edit Proforma Invoice - ${invNumber}`;
+      document.getElementById('editProfClientName').value = invObj.clientName;
+      document.getElementById('editProfDate').value = invObj.invoiceDate || '';
+      document.getElementById('editProfOrderType').value = invObj.orderType || 'JASA PENGURUSAN TRANSPORTASI - ETA TRUCKING';
+      document.getElementById('editProfVat').value = invObj.vatRate !== undefined ? invObj.vatRate : '0';
+      document.getElementById('editProfDiscount').value = invObj.discount || 0;
+
+      renderEditProformaOrders(invObj);
+      openModal('modalEditProforma');
+    }
+
+    function renderEditProformaOrders(invObj) {
+      const tbody = document.getElementById('editProfOrdersTableBody');
+      const clientName = invObj.clientName;
+
+      const candidateOrders = rawData.filter(d => {
+        const cName = String(d.clientName || '').trim().toLowerCase();
+        const invNum = String(d.invoiceNumber || '').trim();
+        const isInThisInv = (invNum === invObj.invoiceNumber);
+        const isUninvoiced = (!invNum || invNum === '-' || invNum === '' || invNum === 'INVOICE NUMBER');
+        return cName === clientName.toLowerCase() && (isInThisInv || isUninvoiced);
+      });
+
+      if (candidateOrders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center p-6 text-slate-400">Tidak ada order kiriman ditemukan untuk client ini.</td></tr>';
+        updateEditProfSummary();
+        return;
+      }
+
+      tbody.innerHTML = candidateOrders.map(ord => {
+        const isChecked = (ord.invoiceNumber === invObj.invoiceNumber);
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-2.5 text-center">
+              <input type="checkbox" value="${ord.rowIndex}" data-charge="${ord.charge}" ${isChecked ? 'checked' : ''} onchange="updateEditProfSummary()" class="chkEditProfRow w-4 h-4 rounded text-amber-600 cursor-pointer">
+            </td>
+            <td class="p-2.5 font-bold text-amber-700">${ord.awbNumber}<div class="text-xs text-slate-400 font-normal">DO: ${ord.doCustomer}</div></td>
+            <td class="p-2.5 text-slate-600">${ord.orderDate}</td>
+            <td class="p-2.5 font-medium">${ord.consigneeName}</td>
+            <td class="p-2.5 text-slate-600">${ord.origin} → ${ord.destination}</td>
+            <td class="p-2.5 text-right font-extrabold text-slate-800">Rp ${Number(ord.charge).toLocaleString('id-ID')}</td>
+          </tr>
+        `;
+      }).join('');
+
+      updateEditProfSummary();
+    }
+
+    function updateEditProfSummary() {
+      const checkedRows = document.querySelectorAll('.chkEditProfRow:checked');
+      let total = 0;
+      checkedRows.forEach(chk => total += Number(chk.getAttribute('data-charge')) || 0);
+
+      document.getElementById('editProfSummaryText').innerText = `${checkedRows.length} Order Dipilih (Total Tagihan: Rp ${total.toLocaleString('id-ID')})`;
+    }
+
+    function saveProformaEdit() {
+      const checkedRows = document.querySelectorAll('.chkEditProfRow:checked');
+      if (checkedRows.length === 0) {
+        alert("Silakan pilih minimal 1 order yang tetap berada dalam Proforma Invoice ini!");
+        return;
+      }
+
+      const rowIndices = Array.from(checkedRows).map(chk => chk.value);
+      const invNumber = document.getElementById('editProfInvNumber').value;
+      const invDate = document.getElementById('editProfDate').value;
+      const orderType = document.getElementById('editProfOrderType').value;
+      const vatRate = document.getElementById('editProfVat').value;
+      const discountVal = document.getElementById('editProfDiscount').value;
+
+      const btn = document.getElementById('btnSaveEditProf');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+
+      apiPost('updateInvoice', {
+        invNumber: invNumber,
+        rowIndices: rowIndices,
+        invDate: invDate,
+        orderType: orderType,
+        vatRate: vatRate,
+        discount: discountVal
+      })
+      .then(res => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Proforma`;
+
+        if (res.status === 'success') {
+          alert(res.message);
+          closeModal('modalEditProforma');
+          loadData();
+        } else {
+          alert("Gagal memperbarui: " + res.message);
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Proforma`;
+        alert("Eror: " + err.message);
+      });
+    }
+
+    function initCreateInvoicePage() {
+      if (!rawData || rawData.length === 0) return;
+
+      const clientSet = new Set();
+      rawData.forEach(d => {
+        if (d.clientName && String(d.clientName).trim() !== '' && d.clientName !== 'Unknown Client' && d.clientName !== '-') {
+          clientSet.add(String(d.clientName).trim());
+        }
+      });
+
+      const clientSelect = document.getElementById('newInvClientSelect');
+      const clientArray = Array.from(clientSet).sort();
+      
+      if (clientArray.length > 0) {
+        clientSelect.innerHTML = clientArray.map(c => `<option value="${c}">${c}</option>`).join('');
+      } else {
+        clientSelect.innerHTML = '<option value="">- Tidak ada client -</option>';
+      }
+
+      const today = new Date();
+      const yr = String(today.getFullYear()).slice(-2);
+      const mo = String(today.getMonth() + 1).padStart(2, '0');
+      const randomNo = String(Math.floor(1000 + Math.random() * 9000));
+
+      document.getElementById('newInvNumberInput').value = `INV-${randomNo}${yr}${mo}`;
+      document.getElementById('newInvDateInput').value = today.toLocaleDateString('id-ID');
+      document.getElementById('newInvDaysInput').value = "30";
+
+      calculateDueDateFromDays();
+      renderUninvoicedOrdersForClient();
+    }
+
+    function calculateDueDateFromDays() {
+      const dateStr = document.getElementById('newInvDateInput').value;
+      const days = parseInt(document.getElementById('newInvDaysInput').value) || 0;
+
+      let baseDate = new Date();
+      if (dateStr && dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+          baseDate = new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+      }
+
+      baseDate.setDate(baseDate.getDate() + days);
+
+      const formattedDueDate = baseDate.toLocaleDateString('id-ID');
+      const previewEl = document.getElementById('dueDatePreviewText');
+      if (previewEl) previewEl.innerText = `Due Date: ${formattedDueDate}`;
+      return formattedDueDate;
+    }
+
+    function renderUninvoicedOrdersForClient() {
+      const clientSelect = document.getElementById('newInvClientSelect');
+      if (!clientSelect || !clientSelect.value) return;
+
+      const selectedClient = String(clientSelect.value).trim().toLowerCase();
+      const tbody = document.getElementById('uninvoicedOrdersTableBody');
+
+      const pendingOrders = rawData.filter(d => {
+        const cName = String(d.clientName || '').trim().toLowerCase();
+        const invNum = String(d.invoiceNumber || '').trim();
+        const isUninvoiced = !invNum || invNum === '-' || invNum === '' || invNum === 'INVOICE NUMBER';
+        return cName === selectedClient && isUninvoiced;
+      });
+
+      if (pendingOrders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center p-6 text-slate-400 font-medium">Semua order milik Client ini sudah terbit Invoice (0 Order Uninvoiced).</td></tr>';
+        updateSelectedSummary();
+        return;
+      }
+
+      tbody.innerHTML = pendingOrders.map(ord => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3 text-center">
+            <input type="checkbox" value="${ord.rowIndex}" data-charge="${ord.charge}" onchange="updateSelectedSummary()" class="chkOrderRow w-4 h-4 rounded text-blue-900 cursor-pointer">
+          </td>
+          <td class="p-3 font-bold text-blue-900">${ord.awbNumber}<div class="text-xs text-slate-400 font-normal">DO: ${ord.doCustomer}</div></td>
+          <td class="p-3 text-slate-600">${ord.orderDate}</td>
+          <td class="p-3 font-medium">${ord.consigneeName}</td>
+          <td class="p-3 text-slate-600">${ord.origin} → ${ord.destination}</td>
+          <td class="p-3 text-right font-extrabold text-blue-900">Rp ${Number(ord.charge).toLocaleString('id-ID')}</td>
+        </tr>
+      `).join('');
+
+      document.getElementById('checkAllOrders').checked = false;
+      updateSelectedSummary();
+    }
+
+    function toggleSelectAllUninvoiced(mainChk) {
+      const checkboxes = document.querySelectorAll('.chkOrderRow');
+      checkboxes.forEach(chk => chk.checked = mainChk.checked);
+      updateSelectedSummary();
+    }
+
+    function updateSelectedSummary() {
+      const checkedRows = document.querySelectorAll('.chkOrderRow:checked');
+      let total = 0;
+      checkedRows.forEach(chk => total += Number(chk.getAttribute('data-charge')) || 0);
+
+      document.getElementById('selectedCountText').innerText = `${checkedRows.length} Order Dipilih (Total: Rp ${total.toLocaleString('id-ID')})`;
+    }
+
+    function submitNewInvoice() {
+      const checkedRows = document.querySelectorAll('.chkOrderRow:checked');
+      if (checkedRows.length === 0) {
+        alert("Silakan pilih minimal 1 order yang akan dimasukkan ke Proforma Invoice!");
+        return;
+      }
+
+      const rowIndices = Array.from(checkedRows).map(chk => chk.value);
+      const invNumber = document.getElementById('newInvNumberInput').value;
+      const invDate = document.getElementById('newInvDateInput').value;
+      const orderType = document.getElementById('newInvOrderTypeSelect').value;
+      const dueDateCalculated = calculateDueDateFromDays();
+      const vatRate = document.getElementById('newInvVatSelect').value;
+      const discountVal = document.getElementById('newInvDiscountInput').value;
+
+      const btn = document.getElementById('btnSubmitInv');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memproses...`;
+
+      apiPost('createInvoice', {
+        rowIndices: rowIndices,
+        invNumber: invNumber,
+        invDate: invDate,
+        orderType: orderType,
+        dueDate: dueDateCalculated,
+        vatRate: vatRate,
+        discount: discountVal
+      })
+      .then(res => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Ke Proforma Invoice`;
+
+        if (res.status === 'success') {
+          alert(res.message);
+          loadData();
+          switchPage('proformaInvoicePage');
+        } else {
+          alert("Gagal: " + res.message);
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Ke Proforma Invoice`;
+        alert("Eror: " + err.message);
+      });
+    }
+
+    function openGroupedInvoiceDetail(invNumber) {
+      const invObj = groupedInvoices.find(i => i.invoiceNumber === invNumber);
+
+      const passOrderType = invObj ? invObj.orderType : "";
+      const passDueDate = invObj ? invObj.dueDate : "";
+      const passVatRate = invObj ? invObj.vatRate : 0;
+      const passDiscount = invObj ? invObj.discount : 0;
+
+      const newTab = window.open('', '_blank');
+      if (newTab) {
+        newTab.document.write(`
+          <html lang="id">
+          <head><title>Memuat Invoice ${invNumber}...</title></head>
+          <body style="font-family: Arial, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8fafc; color: #334155;">
+            <div style="text-align: center;">
+              <div style="font-size: 32px; color: #1e3a8a; margin-bottom: 12px;"><i class="fa-solid fa-spinner fa-spin"></i></div>
+              <h2 style="margin-bottom: 6px; font-size: 18px; color: #0f172a;">Menyiapkan PDF Invoice ${invNumber}...</h2>
+              <p style="color: #64748b; font-size: 13px;">Mengisi template & membuka dokumen PDF resmi...</p>
+            </div>
+          </body>
+          </html>
+        `);
+      }
+
+      apiPost('generateInvoicePdf', {
+        invNumber: invNumber,
+        orderType: passOrderType,
+        dueDate: passDueDate,
+        vatRate: passVatRate,
+        discount: passDiscount
+      })
+      .then(res => {
+        if (res.status === 'success' && res.pdfViewUrl) {
+          if (newTab) {
+            newTab.location.href = res.pdfViewUrl;
+          } else {
+            window.open(res.pdfViewUrl, '_blank');
+          }
+        } else {
+          if (newTab) newTab.close();
+          alert('Gagal memuat invoice: ' + (res ? res.message : 'Error'));
+        }
+      })
+      .catch(err => {
+        if (newTab) newTab.close();
+        alert('Eror: ' + (err ? err.message : err));
+      });
+    }
+
+    function renderTrendChart() {
+      const yearSelect = document.getElementById('chartYearSelect');
+      if (!yearSelect) return;
+      
+      const selectedYear = yearSelect.value;
+      const metric = document.getElementById('chartMetricSelect').value;
+
+      if (!summaryData.chartTrends || !summaryData.chartTrends[selectedYear]) return;
+
+      const yearData = summaryData.chartTrends[selectedYear];
+      const datasets = [];
+
+      const totalData = metric === 'charge' ? yearData.totalCharge : yearData.totalOrder;
+      datasets.push({
+        label: 'TOTAL SELURUH CLIENT',
+        data: totalData,
+        borderColor: '#1e3a8a',
+        backgroundColor: 'rgba(30, 58, 138, 0.05)',
+        borderWidth: 3,
+        borderDash: [5, 5],
+        tension: 0.3,
+        fill: true
+      });
+
+      const clientsMap = metric === 'charge' ? yearData.clientsCharge : yearData.clientsOrder;
+      let colorIndex = 0;
+
+      for (const [client, valArray] of Object.entries(clientsMap)) {
+        const color = chartColors[colorIndex % chartColors.length];
+        datasets.push({
+          label: client,
+          data: valArray,
+          borderColor: color,
+          backgroundColor: color,
+          borderWidth: 2,
+          tension: 0.3,
+          fill: false
+        });
+        colorIndex++;
+      }
+
+      const canvasEl = document.getElementById('trendChartCanvas');
+      if (!canvasEl) return;
+      const ctx = canvasEl.getContext('2d');
+      if (myTrendChart) myTrendChart.destroy();
+
+      myTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: monthNames, datasets: datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function initDashboardDropdowns() {
+      const monthlySelect = document.getElementById('monthlyPeriodSelect');
+      const monthKeys = Object.keys(summaryData.monthly || {}).sort().reverse();
+      monthlySelect.innerHTML = monthKeys.length > 0 ? monthKeys.map(k => `<option value="${k}">Periode Bulan: ${k}</option>`).join('') : '<option value="">- Tidak ada data -</option>';
+
+      const yearlySelect = document.getElementById('yearlyPeriodSelect');
+      const yearKeys = Object.keys(summaryData.yearly || {}).sort().reverse();
+      yearlySelect.innerHTML = yearKeys.length > 0 ? yearKeys.map(k => `<option value="${k}">Tahun: ${k}</option>`).join('') : '<option value="">- Tidak ada data -</option>';
+
+      const chartYearSelect = document.getElementById('chartYearSelect');
+      const trendYears = Object.keys(summaryData.chartTrends || {}).sort().reverse();
+      chartYearSelect.innerHTML = trendYears.length > 0 ? trendYears.map(k => `<option value="${k}">Tahun Grafik: ${k}</option>`).join('') : '<option value="2026">Tahun Grafik: 2026</option>';
+
+      if (monthKeys.length > 0) renderMonthlySummary();
+      if (yearKeys.length > 0) renderYearlySummary();
+      renderTrendChart();
+    }
+
+    function renderMonthlySummary() {
+      const period = document.getElementById('monthlyPeriodSelect').value;
+      const tbody = document.getElementById('monthlyTableBody');
+      const tfoot = document.getElementById('monthlyTableFoot');
+
+      if (!period || !summaryData.monthly || !summaryData.monthly[period]) { 
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-slate-400">Tidak ada data.</td></tr>'; 
+        tfoot.innerHTML = ''; 
+        return; 
+      }
+
+      const data = summaryData.monthly[period];
+      const totalCharge = data.totalCharge;
+      const totalOrder = data.totalOrder;
+
+      let rowsHtml = '';
+      for (const [client, info] of Object.entries(data.clients)) {
+        const pct = totalCharge > 0 ? ((info.charge / totalCharge) * 100).toFixed(1) : 0;
+        rowsHtml += `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3 font-semibold text-slate-800">${client}</td>
+            <td class="p-3 text-center font-medium">${info.order.toLocaleString('id-ID')} order</td>
+            <td class="p-3 text-right font-bold text-slate-700">Rp ${info.charge.toLocaleString('id-ID')}</td>
+            <td class="p-3 text-center"><span class="bg-blue-100 text-blue-900 font-bold px-2.5 py-1 rounded-full text-xs">${pct}%</span></td>
+          </tr>
+        `;
+      }
+      tbody.innerHTML = rowsHtml;
+      tfoot.innerHTML = `<tr><td class="p-3">TOTAL BULAN INI (${period})</td><td class="p-3 text-center">${totalOrder.toLocaleString('id-ID')} Order</td><td class="p-3 text-right text-blue-950 font-extrabold">Rp ${totalCharge.toLocaleString('id-ID')}</td><td class="p-3 text-center">100%</td></tr>`;
+    }
+
+    function renderYearlySummary() {
+      const year = document.getElementById('yearlyPeriodSelect').value;
+      const tbody = document.getElementById('yearlyTableBody');
+      const tfoot = document.getElementById('yearlyTableFoot');
+
+      if (!year || !summaryData.yearly || !summaryData.yearly[year]) { 
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-slate-400">Tidak ada data.</td></tr>'; 
+        tfoot.innerHTML = ''; 
+        return; 
+      }
+
+      const data = summaryData.yearly[year];
+      const totalCharge = data.totalCharge;
+      const totalOrder = data.totalOrder;
+
+      let rowsHtml = '';
+      for (const [client, info] of Object.entries(data.clients)) {
+        const pct = totalCharge > 0 ? ((info.charge / totalCharge) * 100).toFixed(1) : 0;
+        rowsHtml += `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3 font-semibold text-slate-800">${client}</td>
+            <td class="p-3 text-center font-medium">${info.order.toLocaleString('id-ID')} order</td>
+            <td class="p-3 text-right font-bold text-slate-700">Rp ${info.charge.toLocaleString('id-ID')}</td>
+            <td class="p-3 text-center"><span class="bg-indigo-100 text-indigo-800 font-bold px-2.5 py-1 rounded-full text-xs">${pct}%</span></td>
+          </tr>
+        `;
+      }
+      tbody.innerHTML = rowsHtml;
+      tfoot.innerHTML = `<tr><td class="p-3">TOTAL TAHUNAN (${year})</td><td class="p-3 text-center">${totalOrder.toLocaleString('id-ID')} Order</td><td class="p-3 text-right text-blue-950 font-extrabold">Rp ${totalCharge.toLocaleString('id-ID')}</td><td class="p-3 text-center">100%</td></tr>`;
+    }
+
+    function filterTable() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      filteredData = rawData.filter(item => (item.awbNumber || '').toLowerCase().includes(query) || (item.clientName || '').toLowerCase().includes(query) || (item.doCustomer || '').toLowerCase().includes(query));
+      currentPage = 1;
+      renderPaginatedTable();
+    }
+
+    function renderPaginatedTable() {
+      const pageSize = parseInt(document.getElementById('pageSizeSelect').value) || 20;
+      const totalItems = filteredData.length;
+      const totalPages = Math.ceil(totalItems / pageSize) || 1;
+      const startIndex = (currentPage - 1) * pageSize;
+      const pageData = filteredData.slice(startIndex, startIndex + pageSize);
+
+      renderTable(pageData);
+      document.getElementById('paginationInfo').innerText = `Menampilkan ${startIndex + 1} - ${Math.min(startIndex + pageSize, totalItems)} dari ${totalItems} order`;
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('tableBody');
+      if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="text-center p-6 text-slate-400">Tidak ada data order.</td></tr>'; return; }
+
+      tbody.innerHTML = data.map(item => `
+        <tr class="hover:bg-blue-50/50 transition">
+          <td class="p-3 font-bold text-blue-900">${item.awbNumber}<div class="text-xs text-slate-400 font-normal">DO: ${item.doCustomer}</div></td>
+          <td class="p-3 text-slate-600">${item.orderDate}</td>
+          <td class="p-3 font-semibold">${item.clientName}</td>
+          <td class="p-3 text-slate-600">${item.origin} → ${item.destination}</td>
+          <td class="p-3 font-medium">${item.consigneeName}</td>
+          <td class="p-3"><span class="bg-slate-100 px-2 py-1 rounded text-xs">${item.service}</span> <div class="text-xs text-slate-500 mt-0.5">${item.weight} Kg</div></td>
+          <td class="p-3"><span class="bg-blue-100 text-blue-900 px-2.5 py-1 rounded-full text-xs font-bold">${item.trackTrace}</span></td>
+          <td class="p-3 text-center"><button onclick="openUpdateModal(${item.rowIndex})" class="bg-blue-50 text-blue-900 border border-blue-200 px-3 py-1 rounded text-xs font-bold"><i class="fa-solid fa-pen-to-square"></i> Edit</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function updateKPIs(data) {
+      document.getElementById('dashTotalOrder').innerText = data.length.toLocaleString('id-ID');
+      document.getElementById('dashTransit').innerText = data.filter(d => d.trackTrace === 'On Delivery' || d.trackTrace === 'To Hub').length.toLocaleString('id-ID');
+      document.getElementById('dashDelivered').innerText = data.filter(d => d.trackTrace === 'Delivered').length.toLocaleString('id-ID');
+      const totalCharge = data.reduce((sum, d) => sum + (Number(d.charge) || 0), 0);
+      document.getElementById('dashTotalCharge').innerText = 'Rp ' + totalCharge.toLocaleString('id-ID');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    function onError(err) { alert('Terjadi kesalahan: ' + (err ? err.message : err)); }
+  </script>
