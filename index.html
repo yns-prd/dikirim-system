@@ -6,6 +6,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SHEETJS UNTUK EXPORT EXCEL -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 flex h-screen overflow-hidden">
 
@@ -510,6 +512,16 @@
               <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
             </div>
           </div>
+          <div class="flex items-center gap-2">
+            <!-- TOMBOL EXPORT EXCEL (BARU) -->
+            <button onclick="exportVendorToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition shadow-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-file-excel text-sm"></i> Export Excel
+            </button>
+            <button onclick="loadVendorsTable()" class="bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-100 transition shadow-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-arrows-rotate text-emerald-600"></i> Sync & Refresh
+            </button>
+          </div>
+        </div>
           <div class="flex items-center gap-3">
             <button onclick="loadVendorsTable()" class="bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-100 transition shadow-sm flex items-center gap-1.5">
               <i class="fa-solid fa-arrows-rotate text-emerald-600"></i> Sync & Refresh
@@ -1194,6 +1206,57 @@
           }
         })
         .catch(err => alert("Eror: " + err));
+    }
+
+    // FUNGSI EXPORT DATA VENDOR KE EXCEL (.XLSX)
+    function exportVendorToExcel() {
+      // Ambil data yang sedang tampil (jika ada pencarian/filter, data terfilter yang di-export)
+      const query = (document.getElementById('vendorSearchInput')?.value || '').toLowerCase();
+      const dataToExport = masterVendors.filter(v => 
+        (v.vendorCode || '').toLowerCase().includes(query) ||
+        (v.vendorName || '').toLowerCase().includes(query) ||
+        (v.address || '').toLowerCase().includes(query)
+      );
+
+      if (!dataToExport || dataToExport.length === 0) {
+        alert("Tidak ada data vendor yang bisa di-export!");
+        return;
+      }
+
+      // Rapikan format data untuk Excel
+      const excelRows = dataToExport.map((v, index) => ({
+        "No": index + 1,
+        "Vendor Code": v.vendorCode || '-',
+        "Vendor Name": v.vendorName || '-',
+        "Address": v.address || '-',
+        "Email": v.email || '-',
+        "Status": v.status || 'Aktif',
+        "Created At": v.createdAt || '-'
+      }));
+
+      // Buat Worksheet & Workbook baru
+      const worksheet = XLSX.utils.json_to_sheet(excelRows);
+      
+      // Atur lebar kolom Excel agar rapi otomatis
+      worksheet['!cols'] = [
+        { wch: 6 },   // No
+        { wch: 15 },  // Vendor Code
+        { wch: 30 },  // Vendor Name
+        { wch: 45 },  // Address
+        { wch: 25 },  // Email
+        { wch: 12 },  // Status
+        { wch: 15 }   // Created At
+      ];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Master Vendor");
+
+      // Generate Nama File dengan Tanggal Hari Ini
+      const today = new Date().toISOString().split('T')[0];
+      const fileName = `Data_Master_Vendor_${today}.xlsx`;
+
+      // Download File Excel
+      XLSX.writeFile(workbook, fileName);
     }
 
     function loadData() {
