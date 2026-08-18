@@ -1846,7 +1846,10 @@
           invoiceNumber: o.invoice_number
         }));
 
-        onDataLoaded({ status: "success", data: rawData });
+        // Olah data mentah Supabase menjadi objek summary statistik untuk Grafik & Rekapan
+        summaryData = buildSummaryFromRawData(rawData);
+
+        onDataLoaded({ status: "success", data: rawData, summary: summaryData });
       } catch (err) {
         alert("Eror Load Supabase: " + err.message);
       }
@@ -1863,6 +1866,95 @@
       renderPublishInvoiceTable();
       renderProformaInvoiceTable();
       initCreateInvoicePage();
+    }
+
+    // ==================== FUNGSI HITUNG REKAPAN & GRAFIK (AUTO PROCESS) ====================
+    function buildSummaryFromRawData(dataList) {
+      const monthly = {};
+      const yearly = {};
+      const chartTrends = {};
+
+      dataList.forEach(item => {
+        const dateStr = item.orderDate;
+        if (!dateStr || dateStr === '-') return;
+
+        let yearStr = "", monthIdx = -1, periodKey = "";
+
+        // Parse Tanggal Format ID (DD/MM/YYYY) atau Standard
+        if (dateStr.includes('/')) {
+          const parts = dateStr.split('/');
+          if (parts.length === 3) {
+            let day = parts[0].padStart(2, '0');
+            let month = parts[1].padStart(2, '0');
+            let yr = parts[2].trim();
+            if (yr.length === 2) yr = "20" + yr;
+            
+            yearStr = yr;
+            monthIdx = parseInt(month, 10) - 1;
+            periodKey = `${yr}-${month}`;
+          }
+        } else if (dateStr.includes('-')) {
+          const parts = dateStr.split('-');
+          if (parts.length === 3) {
+            yearStr = parts[0];
+            monthIdx = parseInt(parts[1], 10) - 1;
+            periodKey = `${parts[0]}-${parts[1].padStart(2, '0')}`;
+          }
+        }
+
+        if (!yearStr || monthIdx < 0 || monthIdx > 11) return;
+
+        const client = (item.clientName && item.clientName !== '-') ? item.clientName.trim() : "Unknown Client";
+        const chargeVal = Number(item.charge) || 0;
+
+        // 1. OLAH DATA MONTHLY
+        if (!monthly[periodKey]) {
+          monthly[periodKey] = { totalCharge: 0, totalOrder: 0, clients: {} };
+        }
+        monthly[periodKey].totalCharge += chargeVal;
+        monthly[periodKey].totalOrder += 1;
+
+        if (!monthly[periodKey].clients[client]) {
+          monthly[periodKey].clients[client] = { charge: 0, order: 0 };
+        }
+        monthly[periodKey].clients[client].charge += chargeVal;
+        monthly[periodKey].clients[client].order += 1;
+
+        // 2. OLAH DATA YEARLY
+        if (!yearly[yearStr]) {
+          yearly[yearStr] = { totalCharge: 0, totalOrder: 0, clients: {} };
+        }
+        yearly[yearStr].totalCharge += chargeVal;
+        yearly[yearStr].totalOrder += 1;
+
+        if (!yearly[yearStr].clients[client]) {
+          yearly[yearStr].clients[client] = { charge: 0, order: 0 };
+        }
+        yearly[yearStr].clients[client].charge += chargeVal;
+        yearly[yearStr].clients[client].order += 1;
+
+        // 3. OLAH DATA CHART TRENDS (JAN - DES)
+        if (!chartTrends[yearStr]) {
+          chartTrends[yearStr] = {
+            totalCharge: Array(12).fill(0),
+            totalOrder: Array(12).fill(0),
+            clientsCharge: {},
+            clientsOrder: {}
+          };
+        }
+
+        chartTrends[yearStr].totalCharge[monthIdx] += chargeVal;
+        chartTrends[yearStr].totalOrder[monthIdx] += 1;
+
+        if (!chartTrends[yearStr].clientsCharge[client]) {
+          chartTrends[yearStr].clientsCharge[client] = Array(12).fill(0);
+          chartTrends[yearStr].clientsOrder[client] = Array(12).fill(0);
+        }
+        chartTrends[yearStr].clientsCharge[client][monthIdx] += chargeVal;
+        chartTrends[yearStr].clientsOrder[client][monthIdx] += 1;
+      });
+
+      return { monthly: monthly, yearly: yearly, chartTrends: chartTrends };
     }
 
     function loadUsersTable() {
