@@ -1134,7 +1134,12 @@
       document.getElementById('vendorIsEdit').value = "false";
       document.getElementById('vendorRowIndex').value = "";
       document.getElementById('modalVendorTitle').innerHTML = '<i class="fa-solid fa-truck-field mr-2"></i>Tambah Vendor Baru';
-      document.getElementById('vendorCodeInput').value = "Otomatis (Contoh: VC0001)";
+      
+      // Hitung otomatis nomor urut vendor selanjutnya (misal: VC0010)
+      const nextNum = masterVendors.length + 1;
+      const autoCode = "VC" + String(nextNum).padStart(4, '0');
+      document.getElementById('vendorCodeInput').value = autoCode;
+      
       openModal('modalVendor');
     }
 
