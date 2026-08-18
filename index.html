@@ -1868,20 +1868,37 @@
       initCreateInvoicePage();
     }
 
-    // ==================== FUNGSI HITUNG REKAPAN (FIXED PARSING TANGGAL & URUTAN) ====================
+    // ==================== FUNGSI HITUNG REKAPAN (ULTRA FLEXIBLE DATE PARSER) ====================
     function buildSummaryFromRawData(dataList) {
       const monthly = {};
       const yearly = {};
       const chartTrends = {};
 
       dataList.forEach(item => {
-        const dateStr = item.orderDate;
-        if (!dateStr || dateStr === '-' || dateStr === 'Invalid Date') return;
+        const dateStr = String(item.orderDate || '').trim();
+        if (!dateStr || dateStr === '-' || dateStr.toLowerCase().includes('invalid')) return;
 
         let yearStr = "", monthIdx = -1, periodKey = "";
 
-        // Handle berbagai jenis/format tanggal
-        if (dateStr.includes('/')) {
+        // 1. Jika format ISO: YYYY-MM-DD
+        if (dateStr.includes('-')) {
+          const parts = dateStr.split('-');
+          if (parts.length >= 2) {
+            if (parts[0].length === 4) { // YYYY-MM-DD
+              yearStr = parts[0];
+              monthIdx = parseInt(parts[1], 10) - 1;
+              periodKey = `${parts[0]}-${parts[1].padStart(2, '0')}`;
+            } else { // DD-MM-YYYY
+              let yr = parts[2] ? parts[2].trim() : "2026";
+              if (yr.length === 2) yr = "20" + yr;
+              yearStr = yr;
+              monthIdx = parseInt(parts[1], 10) - 1;
+              periodKey = `${yr}-${parts[1].padStart(2, '0')}`;
+            }
+          }
+        } 
+        // 2. Jika format Slash: DD/MM/YYYY atau MM/DD/YYYY
+        else if (dateStr.includes('/')) {
           const parts = dateStr.split('/');
           if (parts.length === 3) {
             let p1 = parseInt(parts[0], 10);
@@ -1889,32 +1906,17 @@
             let p3 = parts[2].trim();
             if (p3.length === 2) p3 = "20" + p3;
 
-            // Jika format DD/MM/YYYY (Standar Indonesia)
-            if (p1 <= 31 && p2 <= 12) {
+            // Jika P1 > 12 -> Dipastikan DD/MM/YYYY (P1=Tanggal, P2=Bulan)
+            if (p1 > 12) {
               yearStr = p3;
               monthIdx = p2 - 1;
               periodKey = `${p3}-${String(p2).padStart(2, '0')}`;
             } 
-            // Jika format YYYY/MM/DD
-            else if (p1 > 1000) {
-              yearStr = String(p1);
-              monthIdx = p2 - 1;
-              periodKey = `${p1}-${String(p2).padStart(2, '0')}`;
-            }
-          }
-        } else if (dateStr.includes('-')) {
-          const parts = dateStr.split('-');
-          if (parts.length === 3) {
-            if (parts[0].length === 4) { // YYYY-MM-DD
-              yearStr = parts[0];
-              monthIdx = parseInt(parts[1], 10) - 1;
-              periodKey = `${parts[0]}-${parts[1].padStart(2, '0')}`;
-            } else { // DD-MM-YYYY
-              let p3 = parts[2].trim();
-              if (p3.length === 2) p3 = "20" + p3;
+            // Default DD/MM/YYYY
+            else {
               yearStr = p3;
-              monthIdx = parseInt(parts[1], 10) - 1;
-              periodKey = `${p3}-${parts[1].padStart(2, '0')}`;
+              monthIdx = p2 - 1;
+              periodKey = `${p3}-${String(p2).padStart(2, '0')}`;
             }
           }
         }
@@ -1924,7 +1926,7 @@
         const client = (item.clientName && item.clientName !== '-') ? item.clientName.trim() : "Unknown Client";
         const chargeVal = Number(item.charge) || 0;
 
-        // 1. MONTHLY
+        // 1. MONTHLY REKAPAN
         if (!monthly[periodKey]) {
           monthly[periodKey] = { totalCharge: 0, totalOrder: 0, clients: {} };
         }
@@ -1937,7 +1939,7 @@
         monthly[periodKey].clients[client].charge += chargeVal;
         monthly[periodKey].clients[client].order += 1;
 
-        // 2. YEARLY
+        // 2. YEARLY REKAPAN
         if (!yearly[yearStr]) {
           yearly[yearStr] = { totalCharge: 0, totalOrder: 0, clients: {} };
         }
