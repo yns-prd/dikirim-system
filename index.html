@@ -8,6 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- SHEETJS UNTUK EXPORT EXCEL -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- SUPABASE OFFICIAL SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 flex h-screen overflow-hidden">
 
@@ -1058,7 +1060,7 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT LOGIC (100% FIXED UNTUK GITHUB PAGES / HOSTING LUAR) -->
+  <!-- JAVASCRIPT LOGIC (100% FIXED UNTUK GITHUB PAGES / SUPABASE DUAL SYNC) -->
   <script>
     let rawData = [];
     let groupedInvoices = [];
@@ -1071,13 +1073,18 @@
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
     const chartColors = ['#1e3a8a', '#f59e0b', '#4f46e5', '#ec4899', '#06b6d4', '#f97316', '#64748b', '#84cc16'];
 
-    // URL Web App Google Apps Script
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwYqy_VGjIxs7Aj-nhc743rnrZaMhSW_KF9gbMfjoceV8GxFEWrDsFsXMvLOdPRCFdP/exec";
+    // 🟢 CONFIG SUPABASE (Hapus /rest/v1/)
+    const SUPABASE_URL = "https://rxaqndsoltvmatrxizuc.supabase.co"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4YXFuZHNvbHR2bWF0cnhpenVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwMjk0OTUsImV4cCI6MjEwMjYwNTQ5NX0.agnMWLazNDo3kAU9DPRmWnSIWm1GtxUn97JvZtHWARE";
 
-    // --- FUNGSI HELPER API FETCH ---
+    // 🔴 Masukkan URL Google Apps Script Web App kamu di sini untuk fitur login/invoice/update
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwYqy_VGjIxs7Aj-nhc743rnrZaMhSW_KF9gbMfjoceV8GxFEWrDsFsXMvLOdPRCFdP/exec"; 
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // --- FUNGSI HELPER API FETCH (GAS) ---
     function apiGet(action) {
-      return fetch(`${GAS_API_URL}?action=${action}`)
-        .then(res => res.json());
+      return fetch(`${GAS_API_URL}?action=${action}`).then(res => res.json());
     }
 
     function apiPost(action, dataObj = {}) {
@@ -1226,67 +1233,38 @@
         loadVendorsTable();
       } else if (pageId === 'clientPage') {
         document.getElementById('pageTitle').innerText = 'Master Client';
+        loadClientsTable();
       } else if (pageId === 'driverPage') {
         document.getElementById('pageTitle').innerText = 'Master Driver';
+        loadDriversTable();
       }
     }
 
-    function renderVendorTable() {
-      const tbody = document.getElementById('vendorTableBody');
-      if (!rawData || rawData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center p-6 text-slate-400">Tidak ada data order untuk mengambil vendor.</td></tr>';
-        return;
-      }
-
-      // Hitung frekuensi/daftar nama vendor dari properti vendorBy (Kolom AF)
-      const vendorMap = {};
-      rawData.forEach(item => {
-        const vName = (item.vendorBy || '').toString().trim();
-        if (vName && vName !== '-' && vName !== 'VENDOR BY') {
-          vendorMap[vName] = (vendorMap[vName] || 0) + 1;
-        }
-      });
-
-      const vendorList = Object.keys(vendorMap).sort();
-
-      if (vendorList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center p-6 text-slate-400">Belum ada nama vendor terisi di kolom AF.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = vendorList.map((v, i) => `
-        <tr class="hover:bg-slate-50 transition">
-          <td class="p-3 font-medium text-slate-500">${i + 1}.</td>
-          <td class="p-3 font-bold text-blue-900">${v}</td>
-          <td class="p-3 text-center"><span class="bg-blue-100 text-blue-900 font-bold px-2.5 py-1 rounded-full text-xs">${vendorMap[v]} Transaksi</span></td>
-        </tr>
-      `).join('');
-    }
-
+    // ==================== MASTER VENDOR LOGIC ====================
     let masterVendors = [];
 
-    // Tambahkan di dalam fungsi switchPage(pageId):
-    // else if (pageId === 'vendorPage') {
-    //   document.getElementById('pageTitle').innerText = 'Master Vendor';
-    //   loadVendorsTable();
-    // }
-
-    function loadVendorsTable() {
+    async function loadVendorsTable() {
       const tbody = document.getElementById('vendorTableBody');
       tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-2 block"></i>Memuat Master Vendor...</td></tr>';
 
-      apiGet('getVendors')
-        .then(res => {
-          if (res.status === 'success' && res.vendors) {
-            masterVendors = res.vendors;
-            renderVendorsTable(masterVendors);
-          } else {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center p-6 text-red-400 font-bold">Gagal memuat data vendor.</td></tr>';
-          }
-        })
-        .catch(err => {
-          tbody.innerHTML = '<tr><td colspan="7" class="text-center p-6 text-red-400">Eror API: ' + err + '</td></tr>';
-        });
+      try {
+        const { data, error } = await supabaseClient.from('vendors').select('*').order('id', { ascending: true });
+        if (error) throw error;
+
+        masterVendors = (data || []).map(v => ({
+          rowIndex: v.id,
+          vendorCode: v.vendor_code,
+          vendorName: v.vendor_name,
+          address: v.address,
+          email: v.email,
+          status: v.status,
+          createdAt: new Date(v.created_at).toLocaleDateString('id-ID')
+        }));
+
+        renderVendorsTable(masterVendors);
+      } catch(err) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center p-6 text-red-400">Eror: ' + err.message + '</td></tr>';
+      }
     }
 
     function renderVendorsTable(data) {
@@ -1338,7 +1316,6 @@
       document.getElementById('vendorRowIndex').value = "";
       document.getElementById('modalVendorTitle').innerHTML = '<i class="fa-solid fa-truck-field mr-2"></i>Tambah Vendor Baru';
       
-      // Hitung otomatis nomor urut vendor selanjutnya (misal: VC0010)
       const nextNum = masterVendors.length + 1;
       const autoCode = "VC" + String(nextNum).padStart(4, '0');
       document.getElementById('vendorCodeInput').value = autoCode;
@@ -1416,30 +1393,30 @@
         .catch(err => alert("Eror: " + err));
     }
 
+    // ==================== MASTER CLIENT LOGIC ====================
     let masterClients = [];
 
-    // Perbarui kondisi di fungsi switchPage(pageId):
-    // else if (pageId === 'clientPage') {
-    //   document.getElementById('pageTitle').innerText = 'Master Client';
-    //   loadClientsTable();
-    // }
-
-    function loadClientsTable() {
+    async function loadClientsTable() {
       const tbody = document.getElementById('clientTableBody');
       tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-2 block"></i>Memuat Master Client...</td></tr>';
 
-      apiGet('getClients')
-        .then(res => {
-          if (res.status === 'success' && res.clients) {
-            masterClients = res.clients;
-            renderClientsTable(masterClients);
-          } else {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center p-6 text-red-400 font-bold">Gagal memuat data client.</td></tr>';
-          }
-        })
-        .catch(err => {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center p-6 text-red-400">Eror API: ' + err + '</td></tr>';
-        });
+      try {
+        const { data, error } = await supabaseClient.from('clients').select('*').order('id', { ascending: true });
+        if (error) throw error;
+
+        masterClients = (data || []).map(c => ({
+          rowIndex: c.id,
+          clientCode: c.client_code,
+          clientName: c.client_name,
+          address: c.address,
+          status: c.status,
+          createdAt: new Date(c.created_at).toLocaleDateString('id-ID')
+        }));
+
+        renderClientsTable(masterClients);
+      } catch(err) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center p-6 text-red-400">Eror: ' + err.message + '</td></tr>';
+      }
     }
 
     function renderClientsTable(data) {
@@ -1490,7 +1467,6 @@
       document.getElementById('clientRowIndex').value = "";
       document.getElementById('modalClientTitle').innerHTML = '<i class="fa-solid fa-building mr-2"></i>Tambah Client Baru';
       
-      // Auto-generate Kode Client CL00001, CL00002, dst (5 digit)
       const nextNum = masterClients.length + 1;
       const autoCode = "CL" + String(nextNum).padStart(5, '0');
       document.getElementById('clientCodeInput').value = autoCode;
@@ -1605,9 +1581,7 @@
       XLSX.writeFile(workbook, `Data_Master_Client_${today}.xlsx`);
     }
 
-    // FUNGSI EXPORT DATA VENDOR KE EXCEL (.XLSX)
     function exportVendorToExcel() {
-      // Ambil data yang sedang tampil (jika ada pencarian/filter, data terfilter yang di-export)
       const query = (document.getElementById('vendorSearchInput')?.value || '').toLowerCase();
       const dataToExport = masterVendors.filter(v => 
         (v.vendorCode || '').toLowerCase().includes(query) ||
@@ -1620,7 +1594,6 @@
         return;
       }
 
-      // Rapikan format data untuk Excel
       const excelRows = dataToExport.map((v, index) => ({
         "No": index + 1,
         "Vendor Code": v.vendorCode || '-',
@@ -1631,10 +1604,7 @@
         "Created At": v.createdAt || '-'
       }));
 
-      // Buat Worksheet & Workbook baru
       const worksheet = XLSX.utils.json_to_sheet(excelRows);
-      
-      // Atur lebar kolom Excel agar rapi otomatis
       worksheet['!cols'] = [
         { wch: 6 },   // No
         { wch: 15 },  // Vendor Code
@@ -1648,38 +1618,35 @@
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Master Vendor");
 
-      // Generate Nama File dengan Tanggal Hari Ini
       const today = new Date().toISOString().split('T')[0];
-      const fileName = `Data_Master_Vendor_${today}.xlsx`;
-
-      // Download File Excel
-      XLSX.writeFile(workbook, fileName);
+      XLSX.writeFile(workbook, `Data_Master_Vendor_${today}.xlsx`);
     }
 
+    // ==================== MASTER DRIVER LOGIC ====================
     let masterDrivers = [];
 
-    // Perbarui fungsi switchPage(pageId) untuk driver:
-    // else if (pageId === 'driverPage') {
-    //   document.getElementById('pageTitle').innerText = 'Master Driver';
-    //   loadDriversTable();
-    // }
-
-    function loadDriversTable() {
+    async function loadDriversTable() {
       const tbody = document.getElementById('driverTableBody');
       tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-2 block"></i>Memuat Master Driver...</td></tr>';
 
-      apiGet('getDrivers')
-        .then(res => {
-          if (res.status === 'success' && res.drivers) {
-            masterDrivers = res.drivers;
-            renderDriversTable(masterDrivers);
-          } else {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center p-6 text-red-400 font-bold">Gagal memuat data driver.</td></tr>';
-          }
-        })
-        .catch(err => {
-          tbody.innerHTML = '<tr><td colspan="7" class="text-center p-6 text-red-400">Eror API: ' + err + '</td></tr>';
-        });
+      try {
+        const { data, error } = await supabaseClient.from('drivers').select('*').order('id', { ascending: true });
+        if (error) throw error;
+
+        masterDrivers = (data || []).map(d => ({
+          rowIndex: d.id,
+          driverCode: d.driver_code,
+          driverName: d.driver_name,
+          phone: d.phone,
+          simNumber: d.sim_number,
+          status: d.status,
+          createdAt: new Date(d.created_at).toLocaleDateString('id-ID')
+        }));
+
+        renderDriversTable(masterDrivers);
+      } catch(err) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center p-6 text-red-400">Eror: ' + err.message + '</td></tr>';
+      }
     }
 
     function renderDriversTable(data) {
@@ -1731,7 +1698,6 @@
       document.getElementById('driverRowIndex').value = "";
       document.getElementById('modalDriverTitle').innerHTML = '<i class="fa-solid fa-id-card mr-2"></i>Tambah Driver Baru';
       
-      // Auto-generate Kode Driver DRV001, DRV002, dst (3 digit)
       const nextNum = masterDrivers.length + 1;
       const autoCode = "DRV" + String(nextNum).padStart(3, '0');
       document.getElementById('driverCodeInput').value = autoCode;
@@ -1850,17 +1816,43 @@
       XLSX.writeFile(workbook, `Data_Master_Driver_${today}.xlsx`);
     }
 
-    function loadData() {
-      apiGet('getOrders')
-        .then(response => onDataLoaded(response))
-        .catch(err => alert("Eror API: " + err));
+    // ==================== LOAD ORDERS FROM SUPABASE ====================
+    async function loadData() {
+      try {
+        const { data: ordersData, error: errOrders } = await supabaseClient
+          .from('orders')
+          .select('*')
+          .order('id', { ascending: false });
+
+        if (errOrders) throw errOrders;
+
+        rawData = (ordersData || []).map(o => ({
+          rowIndex: o.row_index || o.id,
+          doCustomer: o.do_customer,
+          awbNumber: o.awb_number,
+          orderDate: o.order_date,
+          clientName: o.client_name,
+          consigneeName: o.consignee_name,
+          consigneeAddress: o.consignee_address,
+          origin: o.origin,
+          destination: o.destination,
+          service: o.service,
+          weight: o.weight,
+          coly: o.coly,
+          charge: o.charge,
+          trackTrace: o.track_trace,
+          receiverName: o.receiver_name,
+          vendorBy: o.vendor_by,
+          invoiceNumber: o.invoice_number
+        }));
+
+        onDataLoaded({ status: "success", data: rawData });
+      } catch (err) {
+        alert("Eror Load Supabase: " + err.message);
+      }
     }
 
     function onDataLoaded(response) {
-      if (!response || response.status === "error") {
-        alert("Server Error: " + (response ? response.message : "Gagal terhubung ke Google Apps Script"));
-        return;
-      }
       rawData = response.data || [];
       groupedInvoices = response.groupedInvoices || [];
       summaryData = response.summary || { monthly: {}, yearly: {}, chartTrends: {} };
