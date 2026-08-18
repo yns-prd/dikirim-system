@@ -551,7 +551,63 @@
 
       </div>
     </div>
-      
+
+  <!-- PAGE MASTER CLIENT -->
+    <div id="clientPage" class="page-content hidden p-6 space-y-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        
+        <!-- BANNER HEADER THEME PURPLE -->
+        <div class="bg-purple-800 text-white p-4 px-6 flex justify-between items-center shadow-md">
+          <div class="flex items-center gap-2 font-bold text-lg">
+            <i class="fa-solid fa-building text-amber-300"></i> Master Client
+          </div>
+          <button onclick="openModalAddClient()" class="bg-purple-900 hover:bg-slate-900 text-white w-9 h-9 rounded-full flex items-center justify-center font-bold text-lg shadow transition" title="Tambah Client">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+
+        <!-- FILTER & TOOLBAR CLIENT -->
+        <div class="p-4 border-b border-slate-100 flex flex-wrap gap-4 items-center justify-between bg-slate-50/50">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Filter:</span>
+            <div class="relative w-64">
+              <input type="text" id="clientSearchInput" onkeyup="filterClientTable()" placeholder="Ketik nama / kode client..." class="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-purple-500 outline-none">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <!-- EXPORT EXCEL -->
+            <button onclick="exportClientToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition shadow-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-file-excel text-sm"></i> Export Excel
+            </button>
+            <button onclick="loadClientsTable()" class="bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-100 transition shadow-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-arrows-rotate text-purple-600"></i> Sync & Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- TABEL CLIENT -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="p-3.5 w-12 text-center">#</th>
+                <th class="p-3.5">Client Code</th>
+                <th class="p-3.5">Client Name</th>
+                <th class="p-3.5">Address</th>
+                <th class="p-3.5 text-center">Status</th>
+                <th class="p-3.5 text-center w-28">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="clientTableBody" class="divide-y divide-slate-100">
+              <tr><td colspan="6" class="text-center p-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-2 block"></i>Memuat Master Client...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  
     </main>
   </div>
 
@@ -849,6 +905,51 @@
           <button type="button" onclick="closeModal('modalVendor')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">Batal</button>
           <button type="submit" id="btnSaveVendor" class="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5">
             <i class="fa-solid fa-floppy-disk"></i> Simpan Vendor
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL ADD / EDIT CLIENT -->
+  <div id="modalClient" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100">
+      <div class="bg-purple-800 text-white p-4 px-6 flex justify-between items-center">
+        <h3 id="modalClientTitle" class="font-bold text-base"><i class="fa-solid fa-building mr-2"></i>Tambah Client Baru</h3>
+        <button onclick="closeModal('modalClient')" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="formClient" onsubmit="submitClientForm(event)" class="p-6 space-y-4">
+        <input type="hidden" id="clientRowIndex">
+        <input type="hidden" id="clientIsEdit" value="false">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kode Client (Auto)</label>
+          <input type="text" id="clientCodeInput" readonly class="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-purple-800 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Client / Perusahaan *</label>
+          <input type="text" id="clientNameInput" required placeholder="Contoh: PT ANUGERAH KREASI GEMILANG" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-purple-500 outline-none font-semibold">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Alamat Kantor Client</label>
+          <textarea id="clientAddressInput" rows="3" placeholder="Alamat lengkap client..." class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-purple-500 outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Status Client</label>
+          <select id="clientStatusSelect" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-purple-500 outline-none">
+            <option value="Aktif">Aktif</option>
+            <option value="Non-Aktif">Non-Aktif</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modalClient')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">Batal</button>
+          <button type="submit" id="btnSaveClient" class="px-5 py-2 bg-purple-800 hover:bg-purple-900 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5">
+            <i class="fa-solid fa-floppy-disk"></i> Simpan Client
           </button>
         </div>
       </form>
@@ -1211,6 +1312,195 @@
           }
         })
         .catch(err => alert("Eror: " + err));
+    }
+
+    let masterClients = [];
+
+    // Perbarui kondisi di fungsi switchPage(pageId):
+    // else if (pageId === 'clientPage') {
+    //   document.getElementById('pageTitle').innerText = 'Master Client';
+    //   loadClientsTable();
+    // }
+
+    function loadClientsTable() {
+      const tbody = document.getElementById('clientTableBody');
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-2 block"></i>Memuat Master Client...</td></tr>';
+
+      apiGet('getClients')
+        .then(res => {
+          if (res.status === 'success' && res.clients) {
+            masterClients = res.clients;
+            renderClientsTable(masterClients);
+          } else {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center p-6 text-red-400 font-bold">Gagal memuat data client.</td></tr>';
+          }
+        })
+        .catch(err => {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center p-6 text-red-400">Eror API: ' + err + '</td></tr>';
+        });
+    }
+
+    function renderClientsTable(data) {
+      const tbody = document.getElementById('clientTableBody');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400 font-medium">Belum ada data Master Client. Klik tombol + untuk menambah.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map((c, i) => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3 text-center font-medium text-slate-500">${i + 1}.</td>
+          <td class="p-3 font-bold text-purple-900">${c.clientCode || '-'}</td>
+          <td class="p-3 font-extrabold text-slate-800">${c.clientName || '-'}</td>
+          <td class="p-3 text-slate-600 max-w-xs truncate" title="${c.address || '-'}">${c.address || '-'}</td>
+          <td class="p-3 text-center">
+            <span class="${c.status === 'Aktif' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'} px-2.5 py-1 rounded-md font-extrabold text-[10px]">
+              ${c.status || 'Aktif'}
+            </span>
+          </td>
+          <td class="p-3 text-center">
+            <div class="flex items-center justify-center gap-1.5">
+              <button onclick="openModalEditClient(${c.rowIndex})" title="Edit Client" class="bg-cyan-500 hover:bg-cyan-600 text-white p-1.5 rounded-md text-xs transition shadow-sm">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              <button onclick="handleDeleteClient(${c.rowIndex}, '${(c.clientName || '').replace(/'/g, "\\'")}')" title="Hapus Client" class="bg-rose-500 hover:bg-rose-600 text-white p-1.5 rounded-md text-xs transition shadow-sm">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterClientTable() {
+      const query = (document.getElementById('clientSearchInput').value || '').toLowerCase();
+      const filtered = masterClients.filter(c => 
+        (c.clientCode || '').toLowerCase().includes(query) ||
+        (c.clientName || '').toLowerCase().includes(query) ||
+        (c.address || '').toLowerCase().includes(query)
+      );
+      renderClientsTable(filtered);
+    }
+
+    function openModalAddClient() {
+      document.getElementById('formClient').reset();
+      document.getElementById('clientIsEdit').value = "false";
+      document.getElementById('clientRowIndex').value = "";
+      document.getElementById('modalClientTitle').innerHTML = '<i class="fa-solid fa-building mr-2"></i>Tambah Client Baru';
+      
+      // Auto-generate Kode Client CL00001, CL00002, dst (5 digit)
+      const nextNum = masterClients.length + 1;
+      const autoCode = "CL" + String(nextNum).padStart(5, '0');
+      document.getElementById('clientCodeInput').value = autoCode;
+      
+      openModal('modalClient');
+    }
+
+    function openModalEditClient(rowIndex) {
+      const c = masterClients.find(item => Number(item.rowIndex) === Number(rowIndex));
+      if (!c) return;
+
+      document.getElementById('clientIsEdit').value = "true";
+      document.getElementById('clientRowIndex').value = c.rowIndex;
+      document.getElementById('clientCodeInput').value = c.clientCode;
+      document.getElementById('clientNameInput').value = c.clientName;
+      document.getElementById('clientAddressInput').value = c.address;
+      document.getElementById('clientStatusSelect').value = c.status || 'Aktif';
+
+      document.getElementById('modalClientTitle').innerHTML = `<i class="fa-solid fa-pen-to-square mr-2"></i>Edit Client ${c.clientCode}`;
+      openModal('modalClient');
+    }
+
+    function submitClientForm(e) {
+      e.preventDefault();
+      const isEdit = document.getElementById('clientIsEdit').value === "true";
+      const btn = document.getElementById('btnSaveClient');
+
+      const clientData = {
+        rowIndex: document.getElementById('clientRowIndex').value,
+        clientCode: document.getElementById('clientCodeInput').value,
+        clientName: document.getElementById('clientNameInput').value,
+        address: document.getElementById('clientAddressInput').value,
+        status: document.getElementById('clientStatusSelect').value
+      };
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+
+      const action = isEdit ? 'updateClient' : 'addClient';
+
+      apiPost(action, { clientData: clientData })
+        .then(res => {
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Client`;
+
+          if (res.status === 'success') {
+            alert(res.message);
+            closeModal('modalClient');
+            loadClientsTable();
+          } else {
+            alert("Gagal: " + res.message);
+          }
+        })
+        .catch(err => {
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Client`;
+          alert("Eror: " + err);
+        });
+    }
+
+    function handleDeleteClient(rowIndex, clientName) {
+      if (!confirm(`Apakah Anda yakin ingin menghapus client '${clientName}'?`)) return;
+
+      apiPost('deleteClient', { rowIndex: rowIndex })
+        .then(res => {
+          if (res.status === 'success') {
+            alert(res.message);
+            loadClientsTable();
+          } else {
+            alert("Gagal menghapus: " + res.message);
+          }
+        })
+        .catch(err => alert("Eror: " + err));
+    }
+
+    function exportClientToExcel() {
+      const query = (document.getElementById('clientSearchInput')?.value || '').toLowerCase();
+      const dataToExport = masterClients.filter(c => 
+        (c.clientCode || '').toLowerCase().includes(query) ||
+        (c.clientName || '').toLowerCase().includes(query) ||
+        (c.address || '').toLowerCase().includes(query)
+      );
+
+      if (!dataToExport || dataToExport.length === 0) {
+        alert("Tidak ada data client yang bisa di-export!");
+        return;
+      }
+
+      const excelRows = dataToExport.map((c, index) => ({
+        "No": index + 1,
+        "Client Code": c.clientCode || '-',
+        "Client Name": c.clientName || '-',
+        "Address": c.address || '-',
+        "Status": c.status || 'Aktif',
+        "Created At": c.createdAt || '-'
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(excelRows);
+      worksheet['!cols'] = [
+        { wch: 6 },   // No
+        { wch: 15 },  // Client Code
+        { wch: 35 },  // Client Name
+        { wch: 45 },  // Address
+        { wch: 12 },  // Status
+        { wch: 15 }   // Created At
+      ];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Master Client");
+
+      const today = new Date().toISOString().split('T')[0];
+      XLSX.writeFile(workbook, `Data_Master_Client_${today}.xlsx`);
     }
 
     // FUNGSI EXPORT DATA VENDOR KE EXCEL (.XLSX)
