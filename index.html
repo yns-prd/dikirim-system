@@ -1816,17 +1816,36 @@
       XLSX.writeFile(workbook, `Data_Master_Driver_${today}.xlsx`);
     }
 
-    // ==================== LOAD ORDERS FROM SUPABASE ====================
+  // ==================== LOAD ORDERS FROM SUPABASE (BYPASS 1000 ROWS LIMIT) ====================
     async function loadData() {
       try {
-        const { data: ordersData, error: errOrders } = await supabaseClient
-          .from('orders')
-          .select('*')
-          .order('id', { ascending: false });
+        let allOrders = [];
+        let from = 0;
+        const step = 1000;
+        let hasMore = true;
 
-        if (errOrders) throw errOrders;
+        // Looping untuk menarik SEMUA data meskipun lebih dari 1.000 baris
+        while (hasMore) {
+          const { data, error } = await supabaseClient
+            .from('orders')
+            .select('*')
+            .order('id', { ascending: false })
+            .range(from, from + step - 1);
 
-        rawData = (ordersData || []).map(o => ({
+          if (error) throw error;
+
+          allOrders = allOrders.concat(data || []);
+
+          // Jika data yang didapat kurang dari 1000, berarti itu halaman terakhir
+          if (data.length < step) {
+            hasMore = false;
+          } else {
+            from += step;
+          }
+        }
+
+        // Formating data mentah Supabase
+        rawData = allOrders.map(o => ({
           rowIndex: o.row_index || o.id,
           doCustomer: o.do_customer,
           awbNumber: o.awb_number,
@@ -1846,7 +1865,7 @@
           invoiceNumber: o.invoice_number
         }));
 
-        // Olah data mentah Supabase menjadi objek summary statistik untuk Grafik & Rekapan
+        // Olah data untuk Grafik & Rekapan
         summaryData = buildSummaryFromRawData(rawData);
 
         onDataLoaded({ status: "success", data: rawData, summary: summaryData });
