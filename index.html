@@ -698,6 +698,7 @@
 
         <!-- VIEW 2: DETAIL HARGA PER CLIENT (Muncul saat client diklik) -->
         <div id="priceViewDetail" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          
           <div class="bg-indigo-800 text-white p-4 px-6 flex justify-between items-center shadow-md">
             <div class="flex items-center gap-3">
               <button onclick="closePriceDetail()" class="bg-indigo-900 hover:bg-slate-900 text-white p-2 rounded-lg transition shadow-sm" title="Kembali">
@@ -705,10 +706,24 @@
               </button>
               <div class="font-bold text-lg" id="priceDetailTitle">Tarif Harga - Client</div>
             </div>
-            <button onclick="openModalAddPrice()" class="bg-indigo-600 hover:bg-indigo-500 text-white w-9 h-9 rounded-full flex items-center justify-center font-bold text-lg shadow transition" title="Tambah Harga">
-              <i class="fa-solid fa-plus"></i>
-            </button>
+            
+            <!-- TOMBOL AKSI IMPORT, EXPORT, DAN TAMBAH -->
+            <div class="flex items-center gap-2">
+              <!-- Input File Hidden (Disembunyikan, hanya dipanggil lewat tombol Import) -->
+              <input type="file" id="importPriceExcel" class="hidden" accept=".xlsx, .xls" onchange="handleImportPriceExcel(event)">
+              
+              <button onclick="document.getElementById('importPriceExcel').click()" class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-1.5" title="Import Data dari Excel">
+                <i class="fa-solid fa-file-import"></i> Import
+              </button>
+              <button onclick="exportPriceToExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-1.5" title="Export Template/Data ke Excel">
+                <i class="fa-solid fa-file-excel"></i> Export
+              </button>
+              <button onclick="openModalAddPrice()" class="bg-indigo-600 hover:bg-indigo-500 text-white w-9 h-9 rounded-full flex items-center justify-center font-bold text-lg shadow transition ml-2" title="Tambah Harga Manual">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
           </div>
+
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs border-collapse">
               <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
@@ -3077,5 +3092,119 @@
       } catch (err) {
         alert("Gagal menghapus: " + err.message);
       }
+    }
+    // ==================== EXPORT & IMPORT MASTER PRICE EXCEL ====================
+
+    function exportPriceToExcel() {
+      if (!currentPriceClient) return;
+      
+      const clientPrices = masterPrices.filter(p => p.client_name === currentPriceClient);
+      
+      // Jika data kosong, buat 1 baris dummy sebagai "Template" agar user bisa isi lalu import
+      const excelRows = clientPrices.length > 0 ? clientPrices.map((p, index) => ({
+        "No": index + 1,
+        "Origin": p.origin || '',
+        "Destination": p.destination || '',
+        "Service": p.service || 'REGULER',
+        "Harga": Number(p.price) || 0
+      })) : [{ "No": 1, "Origin": "JAKARTA", "Destination": "SURABAYA", "Service": "REGULER", "Harga": 15000 }]; 
+
+      const worksheet = XLSX.utils.json_to_sheet(excelRows);
+      
+      // Atur lebar kolom agar rapi
+      worksheet['!cols'] = [
+        { wch: 5 },   // No
+        { wch: 25 },  // Origin
+        { wch: 30 },  // Destination
+        { wch: 15 },  // Service
+        { wch: 15 }   // Harga
+      ];
+      
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Master_Price");
+
+      // Bersihkan nama client dari karakter khusus agar file bisa disave
+      const safeName = currentPriceClient.replace(/[^a-zA-Z0-9]/g, '_');
+      const today = new Date().toISOString().split('T')[0];
+      
+      XLSX.writeFile(workbook, `Tarif_${safeName}_${today}.xlsx`);
+    }
+
+    async function handleImportPriceExcel(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!currentPriceClient) {
+        alert("Client tidak valid.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const json_data = XLSX.utils.sheet_to_json(worksheet);
+
+          if (json_data.length === 0) {
+            alert("File Excel kosong atau format tidak dikenali.");
+            return;
+          }
+
+          // Munculkan animasi loading di tabel
+          const tbody = document.getElementById('priceDetailTableBody');
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-2 block"></i>Mengimpor Data Rute...</td></tr>';
+
+          const payload = [];
+          
+          json_data.forEach(row => {
+            // Kemampuan membaca judul kolom yang bervariasi dari Excel (Case Insensitive)
+            const origin = row['Origin'] || row['ORIGIN'] || row['Asal'] || row['origin'];
+            const dest = row['Destination'] || row['DESTINATION'] || row['Tujuan'] || row['destination'];
+            const service = row['Service'] || row['SERVICE'] || row['Layanan'] || 'REGULER';
+            const price = row['Harga'] || row['HARGA'] || row['Harga (Rp)'] || row['Price'] || 0;
+
+            if (origin && dest) {
+              payload.push({
+                client_name: currentPriceClient,
+                origin: String(origin).trim().toUpperCase(),
+                destination: String(dest).trim().toUpperCase(),
+                service: String(service).trim().toUpperCase(),
+                price: Number(price) || 0
+              });
+            }
+          });
+
+          if (payload.length === 0) {
+            alert("Gagal membaca Excel. Pastikan terdapat kolom: 'Origin', 'Destination', dan 'Harga'.");
+            renderPriceDetailTable();
+            return;
+          }
+
+          // 1. Tembak Insert Massal (Bulk Insert) ke Supabase langsung
+          const { error } = await supabaseClient.from('master_prices').insert(payload);
+          if (error) throw error;
+
+          // 2. Ambil data terbaru dari Supabase agar sinkron
+          const { data: newData, error: errFetch } = await supabaseClient.from('master_prices').select('*').order('id', { ascending: false });
+          if (errFetch) throw errFetch;
+          
+          masterPrices = newData || [];
+          
+          alert(`Sukses! ${payload.length} tarif rute baru berhasil ditambahkan untuk ${currentPriceClient}.`);
+          renderPriceDetailTable();
+
+        } catch (err) {
+          alert("Gagal mengimpor data: " + err.message);
+          renderPriceDetailTable();
+        } finally {
+          // Reset file input agar user bisa upload ulang file yang sama jika direvisi
+          event.target.value = "";
+        }
+      };
+      
+      reader.readAsArrayBuffer(file);
     }
   </script>
