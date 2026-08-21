@@ -92,6 +92,11 @@
         <i class="fa-solid fa-id-card text-base w-5 text-center"></i>
         <span>Driver</span>
       </a>
+        
+        <!-- MENU MASTER PRICE (BARU) -->
+        <a href="#" id="nav-pricePage" onclick="switchPage('pricePage')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition">
+          <i class="fa-solid fa-tags w-5"></i> Price
+        </a>
       
       <a href="#" onclick="switchPage('orderPage')" id="nav-orderPage" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition text-slate-300 hover:bg-slate-800 hover:text-white">
         <i class="fa-solid fa-boxes-stacked w-5"></i> Order Management
@@ -660,7 +665,118 @@
 
         </div>
       </div>
-  
+
+      <!-- ================= PAGE MASTER PRICE ================= -->
+      <div id="pricePage" class="page-content hidden space-y-6">
+        
+        <!-- VIEW 1: DAFTAR CLIENT (Pilih Client Dulu) -->
+        <div id="priceViewClientList" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="bg-indigo-700 text-white p-4 px-6 flex justify-between items-center shadow-md">
+            <div class="flex items-center gap-2 font-bold text-lg">
+              <i class="fa-solid fa-tags text-amber-300"></i> Master Price (Pilih Client)
+            </div>
+          </div>
+          <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+            <input type="text" id="priceClientSearch" onkeyup="renderPriceClientList()" placeholder="Cari nama client..." class="w-64 pl-3 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+                <tr>
+                  <th class="p-3.5 w-12 text-center">#</th>
+                  <th class="p-3.5">Client Name</th>
+                  <th class="p-3.5 text-center">Total Rute Harga</th>
+                  <th class="p-3.5 text-center w-32">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="priceClientTableBody" class="divide-y divide-slate-100">
+                <!-- Diisi via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- VIEW 2: DETAIL HARGA PER CLIENT (Muncul saat client diklik) -->
+        <div id="priceViewDetail" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="bg-indigo-800 text-white p-4 px-6 flex justify-between items-center shadow-md">
+            <div class="flex items-center gap-3">
+              <button onclick="closePriceDetail()" class="bg-indigo-900 hover:bg-slate-900 text-white p-2 rounded-lg transition shadow-sm" title="Kembali">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+              <div class="font-bold text-lg" id="priceDetailTitle">Tarif Harga - Client</div>
+            </div>
+            <button onclick="openModalAddPrice()" class="bg-indigo-600 hover:bg-indigo-500 text-white w-9 h-9 rounded-full flex items-center justify-center font-bold text-lg shadow transition" title="Tambah Harga">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+                <tr>
+                  <th class="p-3.5 w-12 text-center">#</th>
+                  <th class="p-3.5">Origin (Asal)</th>
+                  <th class="p-3.5">Destination (Tujuan)</th>
+                  <th class="p-3.5 text-center">Service</th>
+                  <th class="p-3.5 text-right">Harga (Rp)</th>
+                  <th class="p-3.5 text-center w-28">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="priceDetailTableBody" class="divide-y divide-slate-100">
+                <!-- Diisi via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+  <!-- MODAL ADD / EDIT PRICE -->
+  <div id="modalPrice" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100">
+      <div class="bg-indigo-700 text-white p-4 px-6 flex justify-between items-center">
+        <h3 id="modalPriceTitle" class="font-bold text-base"><i class="fa-solid fa-tag mr-2"></i>Tambah Harga Baru</h3>
+        <button onclick="closeModal('modalPrice')" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="formPrice" onsubmit="submitPriceForm(event)" class="p-6 space-y-4">
+        <input type="hidden" id="priceIdInput">
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Client</label>
+          <input type="text" id="priceClientInput" readonly class="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-indigo-900 outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Origin (Asal) *</label>
+            <input type="text" id="priceOriginInput" required placeholder="Contoh: JAKARTA" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none uppercase">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Destination (Tujuan) *</label>
+            <input type="text" id="priceDestInput" required placeholder="Contoh: SURABAYA" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none uppercase">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Service Layan</label>
+            <input type="text" id="priceServiceInput" placeholder="REGULER / CHARTER..." class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none uppercase">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Harga (Rp) *</label>
+            <input type="number" id="priceAmountInput" required placeholder="0" min="0" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modalPrice')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">Batal</button>
+          <button type="submit" id="btnSavePrice" class="px-5 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5">
+            <i class="fa-solid fa-floppy-disk"></i> Simpan Harga
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
     </main>
   </div>
 
@@ -1237,6 +1353,9 @@
       } else if (pageId === 'driverPage') {
         document.getElementById('pageTitle').innerText = 'Master Driver';
         loadDriversTable();
+      } else if (pageId === 'pricePage') {
+        document.getElementById('pageTitle').innerText = 'Master Price';
+        initPricePage(); // Fungsi inisialisasi Master Price
       }
     }
 
@@ -2765,4 +2884,198 @@
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
     function onError(err) { alert('Terjadi kesalahan: ' + (err ? err.message : err)); }
+
+    // ==================== MASTER PRICE LOGIC (DIRECT SUPABASE) ====================
+    let masterPrices = [];
+    let currentPriceClient = "";
+
+    async function initPricePage() {
+      document.getElementById('priceViewClientList').classList.remove('hidden');
+      document.getElementById('priceViewDetail').classList.add('hidden');
+      
+      const tbody = document.getElementById('priceClientTableBody');
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center p-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-2 block"></i>Memuat Database Harga...</td></tr>';
+
+      try {
+        // Ambil daftar harga dari Supabase
+        const { data, error } = await supabaseClient.from('master_prices').select('*').order('id', { ascending: false });
+        if (error) throw error;
+        masterPrices = data || [];
+        
+        // Panggil render list client
+        renderPriceClientList();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center p-6 text-red-400">Eror: ${err.message}</td></tr>`;
+      }
+    }
+
+    function renderPriceClientList() {
+      const query = (document.getElementById('priceClientSearch').value || '').toLowerCase();
+      const tbody = document.getElementById('priceClientTableBody');
+      
+      // Ambil daftar unik client dari masterClients (yang sudah di-load sebelumnya)
+      let clients = masterClients.map(c => c.clientName).filter(name => name && name !== '-');
+      
+      // Jika masterClients kosong, ambil dari data orders (rawData)
+      if (clients.length === 0 && rawData.length > 0) {
+        clients = [...new Set(rawData.map(o => o.clientName).filter(n => n && n !== '-'))];
+      }
+      
+      // Sort & Filter
+      clients = [...new Set(clients)].sort();
+      const filteredClients = clients.filter(c => c.toLowerCase().includes(query));
+
+      if (filteredClients.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center p-6 text-slate-400">Tidak ada client ditemukan.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filteredClients.map((clientName, i) => {
+        // Hitung rute harga yang sudah didaftarkan untuk client ini
+        const routeCount = masterPrices.filter(p => p.client_name === clientName).length;
+        
+        return `
+          <tr class="hover:bg-indigo-50/50 transition">
+            <td class="p-3.5 text-center font-medium text-slate-500">${i + 1}.</td>
+            <td class="p-3.5 font-extrabold text-slate-800">${clientName}</td>
+            <td class="p-3.5 text-center">
+              <span class="${routeCount > 0 ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-500'} px-2.5 py-1 rounded-full text-xs font-bold">
+                ${routeCount} Rute Terdaftar
+              </span>
+            </td>
+            <td class="p-3.5 text-center">
+              <button onclick="openPriceDetail('${clientName.replace(/'/g, "\\'")}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow transition">
+                <i class="fa-solid fa-list-check mr-1"></i> Kelola Harga
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openPriceDetail(clientName) {
+      currentPriceClient = clientName;
+      document.getElementById('priceDetailTitle').innerText = `Tarif Harga - ${clientName}`;
+      
+      // Efek Transisi View
+      document.getElementById('priceViewClientList').classList.add('hidden');
+      document.getElementById('priceViewDetail').classList.remove('hidden');
+
+      renderPriceDetailTable();
+    }
+
+    function closePriceDetail() {
+      currentPriceClient = "";
+      document.getElementById('priceViewDetail').classList.add('hidden');
+      document.getElementById('priceViewClientList').classList.remove('hidden');
+      renderPriceClientList(); // Refresh badge hitungan rute
+    }
+
+    function renderPriceDetailTable() {
+      const tbody = document.getElementById('priceDetailTableBody');
+      const clientPrices = masterPrices.filter(p => p.client_name === currentPriceClient);
+
+      if (clientPrices.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400 font-medium">Belum ada rute harga yang didaftarkan untuk client ini. Klik tombol + untuk menambah.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = clientPrices.map((p, i) => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3 text-center font-medium text-slate-500">${i + 1}.</td>
+          <td class="p-3 font-bold text-slate-800">${p.origin}</td>
+          <td class="p-3 font-bold text-slate-800">${p.destination}</td>
+          <td class="p-3 text-center text-slate-600"><span class="bg-slate-100 px-2 py-1 rounded text-[10px] uppercase">${p.service}</span></td>
+          <td class="p-3 text-right font-extrabold text-emerald-700">Rp ${Number(p.price).toLocaleString('id-ID')}</td>
+          <td class="p-3 text-center">
+            <div class="flex items-center justify-center gap-1.5">
+              <button onclick="openModalEditPrice(${p.id})" title="Edit" class="bg-cyan-500 hover:bg-cyan-600 text-white p-1.5 rounded-md text-xs transition shadow-sm">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              <button onclick="deletePrice(${p.id}, '${p.origin}', '${p.destination}')" title="Hapus" class="bg-rose-500 hover:bg-rose-600 text-white p-1.5 rounded-md text-xs transition shadow-sm">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openModalAddPrice() {
+      document.getElementById('formPrice').reset();
+      document.getElementById('priceIdInput').value = "";
+      document.getElementById('priceClientInput').value = currentPriceClient;
+      document.getElementById('modalPriceTitle').innerHTML = '<i class="fa-solid fa-tag mr-2"></i>Tambah Harga Baru';
+      openModal('modalPrice');
+    }
+
+    function openModalEditPrice(id) {
+      const p = masterPrices.find(item => item.id === id);
+      if (!p) return;
+
+      document.getElementById('priceIdInput').value = p.id;
+      document.getElementById('priceClientInput').value = p.client_name;
+      document.getElementById('priceOriginInput').value = p.origin;
+      document.getElementById('priceDestInput').value = p.destination;
+      document.getElementById('priceServiceInput').value = p.service;
+      document.getElementById('priceAmountInput').value = p.price;
+
+      document.getElementById('modalPriceTitle').innerHTML = `<i class="fa-solid fa-pen-to-square mr-2"></i>Edit Harga Rute`;
+      openModal('modalPrice');
+    }
+
+    async function submitPriceForm(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSavePrice');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+
+      const id = document.getElementById('priceIdInput').value;
+      const dataObj = {
+        client_name: document.getElementById('priceClientInput').value,
+        origin: document.getElementById('priceOriginInput').value.toUpperCase(),
+        destination: document.getElementById('priceDestInput').value.toUpperCase(),
+        service: document.getElementById('priceServiceInput').value.toUpperCase() || '-',
+        price: Number(document.getElementById('priceAmountInput').value) || 0
+      };
+
+      try {
+        if (id) {
+          // UPDATE
+          const { error } = await supabaseClient.from('master_prices').update(dataObj).eq('id', id);
+          if (error) throw error;
+        } else {
+          // INSERT BARU
+          const { error } = await supabaseClient.from('master_prices').insert([dataObj]);
+          if (error) throw error;
+        }
+
+        // Refresh Data Background secara instant
+        const { data: newData } = await supabaseClient.from('master_prices').select('*').order('id', { ascending: false });
+        masterPrices = newData || [];
+        
+        closeModal('modalPrice');
+        renderPriceDetailTable(); // Refresh tabel detail yg sedang aktif
+      } catch (err) {
+        alert("Gagal menyimpan harga: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Harga`;
+      }
+    }
+
+    async function deletePrice(id, origin, dest) {
+      if (!confirm(`Hapus tarif rute ${origin} ke ${dest}?`)) return;
+
+      try {
+        const { error } = await supabaseClient.from('master_prices').delete().eq('id', id);
+        if (error) throw error;
+        
+        // Refresh local array & UI
+        masterPrices = masterPrices.filter(p => p.id !== id);
+        renderPriceDetailTable();
+      } catch (err) {
+        alert("Gagal menghapus: " + err.message);
+      }
+    }
   </script>
