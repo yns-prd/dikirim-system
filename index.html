@@ -1346,19 +1346,17 @@
       const submenu = document.getElementById(submenuId);
       const icon = document.getElementById('icon-' + submenuId);
 
-      // Jika menu tertutup (hidden), maka buka
+      if (!submenu || !icon) return; // Pengaman dari Syntax Error jika ID tidak ketemu
+
       if (submenu.classList.contains('hidden')) {
         submenu.classList.remove('hidden');
         icon.classList.add('rotate-180');
-      } 
-      // Jika menu terbuka, maka tutup
-      else {
+      } else {
         submenu.classList.add('hidden');
         icon.classList.remove('rotate-180');
       }
     }
 
-    // Fungsi tambahan untuk otomatis membuka grup menu jika ada anak menu yang sedang aktif diklik
     function autoOpenParentSubmenu(pageId) {
       const allSubmenus = ['submenuMaster', 'submenuInvoice', 'submenuSystem'];
       
@@ -1379,6 +1377,8 @@
         const submenu = document.getElementById(submenuId);
         const icon = document.getElementById('icon-' + submenuId);
         
+        if (!submenu || !icon) return; // Pengaman dari Syntax Error
+        
         if (submenuId === parentIdToOpen) {
           submenu.classList.remove('hidden');
           icon.classList.add('rotate-180');
@@ -1388,28 +1388,31 @@
         }
       });
     }
-    
-    function switchPage(pageId) {
-      document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
-      document.getElementById(pageId).classList.remove('hidden');
 
-      // Terapkan auto-open accordion saat sub-menu di-klik
+    // ==================== NAVIGATION LOGIC ====================
+    function switchPage(pageId) {
+      // 1. Sembunyikan semua halaman, lalu tampilkan yang diklik
+      document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
+      const activePage = document.getElementById(pageId);
+      if (activePage) activePage.classList.remove('hidden');
+
+      // 2. Buka accordion menu jika menu anaknya diklik
       autoOpenParentSubmenu(pageId);
 
-      // (.... kode switchPage lama ke bawahnya tetap dibiarkan sama ....)
-      document.querySelectorAll('.nav-item').forEach(el => {
-
+      // 3. Reset warna seluruh menu sidebar
       document.querySelectorAll('.nav-item').forEach(el => {
         el.classList.remove('bg-blue-900', 'text-white', 'shadow-sm');
         el.classList.add('text-slate-300');
       });
 
+      // 4. Warnai tombol navigasi yang sedang aktif
       const activeNav = document.getElementById('nav-' + pageId);
       if (activeNav) {
         activeNav.classList.add('bg-blue-900', 'text-white', 'shadow-sm');
         activeNav.classList.remove('text-slate-300');
       }
 
+      // 5. Ganti Judul & Eksekusi Fungsi Sesuai Halaman
       if (pageId === 'dashboardPage') {
         document.getElementById('pageTitle').innerText = 'Dashboard Analytics';
         setTimeout(renderTrendChart, 100);
@@ -1438,7 +1441,7 @@
         loadDriversTable();
       } else if (pageId === 'pricePage') {
         document.getElementById('pageTitle').innerText = 'Master Price';
-        initPricePage(); // Fungsi inisialisasi Master Price
+        initPricePage(); 
       }
     }
 
