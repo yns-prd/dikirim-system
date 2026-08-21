@@ -65,65 +65,79 @@
       </div>
     </div>
 
-    <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-      <a href="#" onclick="switchPage('dashboardPage')" id="nav-dashboardPage" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition bg-blue-900 text-white shadow-sm">
-        <i class="fa-solid fa-chart-pie text-amber-400 w-5"></i> Dashboard
-      </a>
-
-      <!-- GRUP MENU MASTER -->
-      <div class="px-4 mt-6 mb-2 text-[11px] font-extrabold text-blue-300 uppercase tracking-wider">
-        MASTER DATA
-      </div>
-
-      <!-- 1. VENDOR -->
-      <a href="javascript:void(0)" id="nav-vendorPage" onclick="switchPage('vendorPage')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium text-sm">
-        <i class="fa-solid fa-truck-field text-base w-5 text-center"></i>
-        <span>Vendor</span>
-      </a>
-
-      <!-- 2. CLIENT -->
-      <a href="javascript:void(0)" id="nav-clientPage" onclick="switchPage('clientPage')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium text-sm">
-        <i class="fa-solid fa-building text-base w-5 text-center"></i>
-        <span>Client</span>
-      </a>
-
-      <!-- 3. DRIVER -->
-      <a href="javascript:void(0)" id="nav-driverPage" onclick="switchPage('driverPage')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium text-sm">
-        <i class="fa-solid fa-id-card text-base w-5 text-center"></i>
-        <span>Driver</span>
-      </a>
+    <!-- NAVIGASI SIDEBAR (ACCORDION STYLE) -->
+      <nav class="flex-1 overflow-y-auto px-3 py-6 space-y-2">
         
-        <!-- MENU MASTER PRICE (BARU) -->
-        <a href="#" id="nav-pricePage" onclick="switchPage('pricePage')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition">
-          <i class="fa-solid fa-tags w-5"></i> Price
+        <!-- DASHBOARD -->
+        <a href="#" id="nav-dashboardPage" onclick="switchPage('dashboardPage')" class="nav-item bg-blue-900 text-white shadow-sm flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition">
+          <i class="fa-solid fa-chart-pie w-5 text-amber-400"></i> Dashboard
         </a>
-      
-      <a href="#" onclick="switchPage('orderPage')" id="nav-orderPage" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition text-slate-300 hover:bg-slate-800 hover:text-white">
-        <i class="fa-solid fa-boxes-stacked w-5"></i> Order Management
-      </a>
-      
-      <!-- SUB MENU INVOICE LOGISTICS -->
-      <div class="pt-3">
-        <div class="text-[11px] uppercase tracking-wider font-bold text-blue-400 px-4 mb-1">INVOICE MANAGEMENT</div>
-        <a href="#" onclick="switchPage('publishInvoicePage')" id="nav-publishInvoicePage" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition text-slate-300 hover:bg-slate-800 hover:text-white">
-          <i class="fa-solid fa-file-circle-check text-blue-400 w-5"></i> Publish Invoice
-        </a>
-        <a href="#" onclick="switchPage('proformaInvoicePage')" id="nav-proformaInvoicePage" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition text-slate-300 hover:bg-slate-800 hover:text-white">
-          <i class="fa-solid fa-file-lines text-amber-400 w-5"></i> Proforma Invoice
-        </a>
-        <a href="#" onclick="switchPage('createInvoicePage')" id="nav-createInvoicePage" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition text-slate-300 hover:bg-slate-800 hover:text-white">
-          <i class="fa-solid fa-circle-plus text-cyan-400 w-5"></i> Buat Invoice Draf
-        </a>
-      </div>
 
-      <!-- SYSTEM SETTINGS -->
-      <div class="pt-3">
-        <div class="text-[11px] uppercase tracking-wider font-bold text-amber-400 px-4 mb-1">SYSTEM SETTINGS</div>
-        <a href="#" onclick="switchPage('userSettingPage')" id="nav-userSettingPage" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition text-slate-300 hover:bg-slate-800 hover:text-white">
-          <i class="fa-solid fa-users-gear text-amber-400 w-5"></i> User Management
-        </a>
-      </div>
-    </nav>
+        <!-- MENU GROUP 1: MASTER DATA -->
+        <div class="pt-2">
+          <button onclick="toggleSubmenu('submenuMaster')" class="w-full flex items-center justify-between px-4 py-2 rounded-xl text-xs font-black text-slate-400 uppercase tracking-wider hover:bg-slate-800 hover:text-white transition">
+            <div class="flex items-center gap-3"><i class="fa-solid fa-database w-5"></i> Master Data</div>
+            <i id="icon-submenuMaster" class="fa-solid fa-chevron-down transition-transform duration-300"></i>
+          </button>
+          
+          <div id="submenuMaster" class="submenu-container hidden overflow-hidden transition-all duration-300 mt-1 space-y-1 pl-4 border-l border-slate-700/50 ml-6">
+            <a href="#" id="nav-vendorPage" onclick="switchPage('vendorPage')" class="nav-item flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
+              <i class="fa-solid fa-truck w-4 text-slate-400"></i> Vendor
+            </a>
+            <a href="#" id="nav-clientPage" onclick="switchPage('clientPage')" class="nav-item flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
+              <i class="fa-solid fa-building w-4 text-slate-400"></i> Client
+            </a>
+            <a href="#" id="nav-driverPage" onclick="switchPage('driverPage')" class="nav-item flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
+              <i class="fa-solid fa-id-card w-4 text-slate-400"></i> Driver
+            </a>
+            <a href="#" id="nav-pricePage" onclick="switchPage('pricePage')" class="nav-item flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
+              <i class="fa-solid fa-tags w-4 text-amber-400"></i> Price (Tarif)
+            </a>
+          </div>
+        </div>
+
+        <!-- MENU GROUP 2: ORDER MANAGEMENT -->
+        <div class="pt-2">
+          <a href="#" id="nav-orderPage" onclick="switchPage('orderPage')" class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            <i class="fa-solid fa-boxes-packing w-5 text-emerald-400"></i> Order Data
+          </a>
+        </div>
+
+        <!-- MENU GROUP 3: INVOICE MANAGEMENT -->
+        <div class="pt-2">
+          <button onclick="toggleSubmenu('submenuInvoice')" class="w-full flex items-center justify-between px-4 py-2 rounded-xl text-xs font-black text-slate-400 uppercase tracking-wider hover:bg-slate-800 hover:text-white transition">
+            <div class="flex items-center gap-3"><i class="fa-solid fa-file-invoice-dollar w-5"></i> Keuangan</div>
+            <i id="icon-submenuInvoice" class="fa-solid fa-chevron-down transition-transform duration-300"></i>
+          </button>
+
+          <div id="submenuInvoice" class="submenu-container hidden overflow-hidden transition-all duration-300 mt-1 space-y-1 pl-4 border-l border-slate-700/50 ml-6">
+            <a href="#" id="nav-publishInvoicePage" onclick="switchPage('publishInvoicePage')" class="nav-item flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
+              <i class="fa-solid fa-file-invoice w-4 text-slate-400"></i> Invoice Resmi
+            </a>
+            <a href="#" id="nav-proformaInvoicePage" onclick="switchPage('proformaInvoicePage')" class="nav-item flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
+              <i class="fa-solid fa-file-lines w-4 text-slate-400"></i> Proforma Draf
+            </a>
+            <a href="#" id="nav-createInvoicePage" onclick="switchPage('createInvoicePage')" class="nav-item flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
+              <i class="fa-solid fa-circle-plus w-4 text-sky-400"></i> Buat Invoice Baru
+            </a>
+          </div>
+        </div>
+
+        <!-- MENU GROUP 4: SYSTEM SETTINGS -->
+        <div class="pt-2">
+          <button onclick="toggleSubmenu('submenuSystem')" class="w-full flex items-center justify-between px-4 py-2 rounded-xl text-xs font-black text-slate-400 uppercase tracking-wider hover:bg-slate-800 hover:text-white transition">
+            <div class="flex items-center gap-3"><i class="fa-solid fa-gear w-5"></i> Settings</div>
+            <i id="icon-submenuSystem" class="fa-solid fa-chevron-down transition-transform duration-300"></i>
+          </button>
+
+          <div id="submenuSystem" class="submenu-container hidden overflow-hidden transition-all duration-300 mt-1 space-y-1 pl-4 border-l border-slate-700/50 ml-6">
+            <a href="#" id="nav-userSettingPage" onclick="switchPage('userSettingPage')" class="nav-item flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
+              <i class="fa-solid fa-users w-4 text-slate-400"></i> Akun Pengguna
+            </a>
+          </div>
+        </div>
+
+      </nav>
 
     <!-- FOOTER SIDEBAR KINI HANYA COPYRIGHT (PROFIL SUDAH PINDAH KE HEADER) -->
     <div class="p-4 border-t border-slate-800 text-[10px] text-slate-400 text-center">
@@ -1327,9 +1341,63 @@
       }
     }
 
+    // ==================== SIDEBAR MENU ACCORDION LOGIC ====================
+    function toggleSubmenu(submenuId) {
+      const submenu = document.getElementById(submenuId);
+      const icon = document.getElementById('icon-' + submenuId);
+
+      // Jika menu tertutup (hidden), maka buka
+      if (submenu.classList.contains('hidden')) {
+        submenu.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+      } 
+      // Jika menu terbuka, maka tutup
+      else {
+        submenu.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+      }
+    }
+
+    // Fungsi tambahan untuk otomatis membuka grup menu jika ada anak menu yang sedang aktif diklik
+    function autoOpenParentSubmenu(pageId) {
+      const allSubmenus = ['submenuMaster', 'submenuInvoice', 'submenuSystem'];
+      
+      const childParentMap = {
+        'vendorPage': 'submenuMaster',
+        'clientPage': 'submenuMaster',
+        'driverPage': 'submenuMaster',
+        'pricePage': 'submenuMaster',
+        'publishInvoicePage': 'submenuInvoice',
+        'proformaInvoicePage': 'submenuInvoice',
+        'createInvoicePage': 'submenuInvoice',
+        'userSettingPage': 'submenuSystem'
+      };
+
+      const parentIdToOpen = childParentMap[pageId];
+
+      allSubmenus.forEach(submenuId => {
+        const submenu = document.getElementById(submenuId);
+        const icon = document.getElementById('icon-' + submenuId);
+        
+        if (submenuId === parentIdToOpen) {
+          submenu.classList.remove('hidden');
+          icon.classList.add('rotate-180');
+        } else {
+          submenu.classList.add('hidden');
+          icon.classList.remove('rotate-180');
+        }
+      });
+    }
+    
     function switchPage(pageId) {
       document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
       document.getElementById(pageId).classList.remove('hidden');
+
+      // Terapkan auto-open accordion saat sub-menu di-klik
+      autoOpenParentSubmenu(pageId);
+
+      // (.... kode switchPage lama ke bawahnya tetap dibiarkan sama ....)
+      document.querySelectorAll('.nav-item').forEach(el => {
 
       document.querySelectorAll('.nav-item').forEach(el => {
         el.classList.remove('bg-blue-900', 'text-white', 'shadow-sm');
