@@ -415,30 +415,53 @@ function updateKPIs(data) {
   document.getElementById('dashTotalCharge').innerText = 'Rp ' + totalCharge.toLocaleString('id-ID');
 }
 
+// ==================== SUBMIT ORDER BARU LENGKAP ====================
 function submitAddOrder(e) {
   e.preventDefault();
+
+  const clientSelected = document.getElementById('addClientSelect').value;
+  const senderNameVal = document.getElementById('addSenderName').value;
+
+  if (!clientSelected && !senderNameVal) {
+    alert("Silakan pilih Client atau isi Nama Pengirim!");
+    return;
+  }
+
   const formData = {
     doCustomer: document.getElementById('addDoCustomer').value,
     awbNumber: document.getElementById('addAwbNumber').value,
-    clientName: document.getElementById('addClientName').value,
-    service: document.getElementById('addService').value,
-    origin: document.getElementById('addOrigin').value,
-    destination: document.getElementById('addDestination').value,
+    clientName: clientSelected || senderNameVal,
+    senderName: senderNameVal,
+    senderAddress: document.getElementById('addSenderAddress').value,
+    senderPic: document.getElementById('addSenderPic').value,
     consigneeName: document.getElementById('addConsigneeName').value,
     consigneeAddress: document.getElementById('addConsigneeAddress').value,
+    consigneePic: document.getElementById('addConsigneePic').value,
+    origin: document.getElementById('addOrigin').value,
+    destination: document.getElementById('addDestination').value,
+    service: document.getElementById('addService').value,
+    paymentType: document.getElementById('addPaymentType').value,
     weight: document.getElementById('addWeight').value,
     coly: document.getElementById('addColy').value,
-    charge: document.getElementById('addCharge').value
+    charge: document.getElementById('addCharge').value,
+    chargePacking: document.getElementById('addChargePacking').value || 0,
+    chargeInsurance: document.getElementById('addChargeInsurance').value || 0,
+    chargeOther: document.getElementById('addChargeOther').value || 0,
+    podReturn: document.getElementById('addPodReturn').value,
+    orderDate: document.getElementById('addOrderDate').value,
+    vendorBy: document.getElementById('addVendorSelect').value,
+    driverBy: document.getElementById('addDriverSelect').value,
+    note: document.getElementById('addNote').value
   };
 
   const btn = document.getElementById('btnSaveAddOrder');
   btn.disabled = true;
-  btn.innerText = 'Menyimpan...';
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
 
   apiPost('addOrder', { formData: formData })
     .then(res => {
       btn.disabled = false;
-      btn.innerText = 'Simpan Order';
+      btn.innerHTML = `Simpan Order Baru`;
       if (res.status === 'success') {
         alert(res.message);
         closeModal('modalAddOrder');
@@ -450,8 +473,8 @@ function submitAddOrder(e) {
     })
     .catch(err => {
       btn.disabled = false;
-      btn.innerText = 'Simpan Order';
-      alert('Eror: ' + err.message);
+      btn.innerHTML = `Simpan Order Baru`;
+      alert('Eror: ' + (err.message || err));
     });
 }
 
@@ -554,3 +577,69 @@ function getStatusBadgeClass(status) {
   
   return 'bg-slate-100 text-slate-800 border border-slate-300';
 }
+
+// ==================== BUKA MODAL ADD ORDER & SINKRONKAN MASTER DATA ====================
+function openModalAddOrder() {
+  document.getElementById('formAddOrder').reset();
+
+  // 1. POPULATE DROPDOWN CLIENT DARI MASTER DATA
+  const clientSelect = document.getElementById('addClientSelect');
+  if (clientSelect) {
+    let clients = (masterClients || []).map(c => c.clientName).filter(n => n && n !== '-');
+    if (clients.length === 0 && rawData.length > 0) {
+      clients = [...new Set(rawData.map(o => o.clientName).filter(n => n && n !== '-'))];
+    }
+    clients = [...new Set(clients)].sort();
+    
+    clientSelect.innerHTML = '<option value="">-- Pilih Client / Customer --</option>' + 
+      clients.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+
+  // 2. POPULATE DROPDOWN VENDOR DARI MASTER DATA
+  const vendorSelect = document.getElementById('addVendorSelect');
+  if (vendorSelect) {
+    let vendors = (masterVendors || []).map(v => v.vendorName).filter(n => n && n !== '-');
+    vendors = [...new Set(vendors)].sort();
+    
+    vendorSelect.innerHTML = '<option value="-">- Pilih Vendor Courier -</option>' + 
+      vendors.map(v => `<option value="${v}">${v}</option>`).join('');
+  }
+
+  // 3. POPULATE DROPDOWN DRIVER DARI MASTER DATA
+  const driverSelect = document.getElementById('addDriverSelect');
+  if (driverSelect) {
+    let drivers = (masterDrivers || []).map(d => d.driverName).filter(n => n && n !== '-');
+    drivers = [...new Set(drivers)].sort();
+    
+    driverSelect.innerHTML = '<option value="-">- Pilih Driver -</option>' + 
+      drivers.map(d => `<option value="${d}">${d}</option>`).join('');
+  }
+
+  // 4. SET TANGGAL ORDER OTOMATIS WAKTU SEKARANG (FORMAT YYYY-MM-DD HH:MM)
+  const now = new Date();
+  const yr = now.getFullYear();
+  const mo = String(now.getMonth() + 1).padStart(2, '0');
+  const da = String(now.getDate()).padStart(2, '0');
+  const ho = String(now.getHours()).padStart(2, '0');
+  const mi = String(now.getMinutes()).padStart(2, '0');
+  
+  const dateInput = document.getElementById('addOrderDate');
+  if (dateInput) dateInput.value = `${yr}-${mo}-${da} ${ho}:${mi}`;
+
+  openModal('modalAddOrder');
+}
+
+// ==================== AUTO-FILL PENGIRIM (TETAP BISA DIEDIT MANUAL) ====================
+function autoFillAddSenderInfo(clientName) {
+  if (!clientName) return;
+
+  const clientObj = (masterClients || []).find(c => c.clientName === clientName);
+
+  const nameInput = document.getElementById('addSenderName');
+  const addrInput = document.getElementById('addSenderAddress');
+
+  if (nameInput) nameInput.value = clientName;
+  if (addrInput) addrInput.value = clientObj ? (clientObj.address || '') : '';
+}
+
+
