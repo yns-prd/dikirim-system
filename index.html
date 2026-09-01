@@ -922,137 +922,474 @@
     </main>
   </div>
 
-  <!-- MODAL 1: TAMBAH ORDER BARU -->
-  <div id="modalAddOrder" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-      <div class="bg-blue-900 text-white p-5 flex justify-between items-center">
-        <h3 class="text-lg font-bold"><i class="fa-solid fa-plus-circle mr-2"></i> Input Order Kiriman Baru</h3>
-        <button onclick="closeModal('modalAddOrder')" class="text-white hover:text-amber-400"><i class="fa-solid fa-xmark text-xl"></i></button>
+  <!-- MODAL INPUT ORDER BARU (GAYA TMS ERP LOGISTIK) -->
+  <div id="modalAddOrder" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs hidden flex items-center justify-center p-2 z-50">
+    <div class="bg-white rounded-xl max-w-7xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[96vh] text-xs">
+      
+      <!-- HEADER BAR BLUE ERP -->
+      <div class="bg-blue-900 text-white px-5 py-2.5 flex justify-between items-center flex-shrink-0">
+        <h3 class="text-sm font-bold flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle text-amber-400"></i> Input Order Kiriman Baru
+        </h3>
+        <div class="flex items-center gap-3">
+          <button type="submit" form="formAddOrder" title="Simpan Order" class="hover:text-amber-300 transition text-sm"><i class="fa-solid fa-floppy-disk"></i></button>
+          <button type="button" onclick="closeModal('modalAddOrder')" title="Tutup" class="hover:text-amber-300 transition text-sm"><i class="fa-solid fa-xmark text-base"></i></button>
+        </div>
       </div>
-      <form id="formAddOrder" onsubmit="submitAddOrder(event)" class="p-6 overflow-y-auto space-y-4 text-sm flex-1">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block font-semibold mb-1">Nomor DO Customer</label>
-            <input type="text" id="addDoCustomer" required class="w-full border rounded-lg p-2">
+
+      <form id="formAddOrder" onsubmit="submitAddOrder(event)" class="p-4 overflow-y-auto space-y-4 flex-1 bg-slate-100">
+
+        <!-- TOP BAR: AWB, ORIGIN, DESTINATION -->
+        <div class="bg-white p-3 rounded-lg border border-slate-200 grid grid-cols-1 md:grid-cols-12 gap-3 items-start shadow-xs">
+          <!-- NOMOR AWB & DO -->
+          <div class="md:col-span-3 space-y-1">
+            <label class="font-bold text-slate-600 block">NOMOR AWB (OPSIONAL)</label>
+            <input type="text" id="addAwbNumber" placeholder="Otomatis jika kosong" class="w-full p-2 bg-slate-50 border border-slate-300 rounded font-bold text-blue-900 outline-none">
+            <input type="text" id="addDoCustomer" required placeholder="No. DO Customer *" class="w-full p-2 bg-amber-950 text-amber-100 font-bold rounded text-xs outline-none">
           </div>
-          <div>
-            <label class="block font-semibold mb-1">Nomor AWB (Opsional)</label>
-            <input type="text" id="addAwbNumber" placeholder="Otomatis jika kosong" class="w-full border rounded-lg p-2">
+
+          <!-- ASAL (ORIGIN) -->
+          <div class="md:col-span-3 space-y-1">
+            <div class="flex gap-1">
+              <div class="w-1/3">
+                <label class="font-bold text-slate-600 block">TLC</label>
+                <input type="text" value="JKT" readonly class="w-full p-1.5 bg-slate-100 border text-center font-bold">
+              </div>
+              <div class="w-2/3">
+                <label class="font-bold text-slate-600 block">ASAL *</label>
+                <input type="text" id="addOrigin" value="JAKARTA" required class="w-full p-1.5 bg-slate-800 text-white font-bold rounded uppercase">
+              </div>
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 block">Print Code</label>
+              <input type="text" placeholder="Print Code" class="w-full p-1 border rounded text-[11px]">
+            </div>
           </div>
-          <div>
-            <label class="block font-semibold mb-1">Client / Pengirim</label>
-            <input type="text" id="addClientName" required class="w-full border rounded-lg p-2">
+
+          <!-- TUJUAN (DESTINATION) -->
+          <div class="md:col-span-3 space-y-1">
+            <div class="flex gap-1">
+              <div class="w-1/3">
+                <label class="font-bold text-slate-600 block">TLC</label>
+                <input type="text" placeholder="TLC" class="w-full p-1.5 bg-slate-100 border text-center font-bold">
+              </div>
+              <div class="w-2/3">
+                <label class="font-bold text-slate-600 block">TUJUAN *</label>
+                <input type="text" id="addDestination" required placeholder="SURABAYA..." class="w-full p-1.5 border border-slate-300 font-bold rounded uppercase">
+              </div>
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 block">REFF NO</label>
+              <input type="text" placeholder="REFF NO" class="w-full p-1 border rounded text-[11px]">
+            </div>
           </div>
-          <div>
-            <label class="block font-semibold mb-1">Layanan (Service)</label>
-            <select id="addService" class="w-full border rounded-lg p-2">
-              <option value="REGULER">REGULER</option>
-              <option value="CHARTER BV">CHARTER BV</option>
-              <option value="EXPRESS">EXPRESS</option>
-              <option value="TRUCKING">TRUCKING</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Kota Origin</label>
-            <input type="text" id="addOrigin" value="JAKARTA" required class="w-full border rounded-lg p-2">
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Kota Tujuan (Destination)</label>
-            <input type="text" id="addDestination" required class="w-full border rounded-lg p-2">
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Nama Consignee (Penerima)</label>
-            <input type="text" id="addConsigneeName" required class="w-full border rounded-lg p-2">
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Alamat Penerima</label>
-            <input type="text" id="addConsigneeAddress" class="w-full border rounded-lg p-2">
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Berat (Kg)</label>
-            <input type="number" id="addWeight" value="1" step="0.1" required class="w-full border rounded-lg p-2">
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Coly / Jumlah Koli</label>
-            <input type="number" id="addColy" value="1" required class="w-full border rounded-lg p-2">
-          </div>
-          <div class="md:col-span-2">
-            <label class="block font-semibold mb-1">Biaya Charge Tagihan (Rp)</label>
-            <input type="number" id="addCharge" value="0" required class="w-full border rounded-lg p-2 font-bold text-blue-900">
+
+          <!-- RINGKASAN PETUNJUK -->
+          <div class="md:col-span-3 bg-blue-50 p-2.5 rounded border border-blue-200 text-[11px] space-y-1">
+            <div class="font-bold text-blue-900 flex items-center gap-1">
+              <i class="fa-solid fa-circle-info"></i> Petunjuk Input
+            </div>
+            <p class="text-slate-600 leading-tight">Pastikan Nama Client, Penerima, Kota Tujuan, dan Nominal Charge terisi dengan benar sebelum menyimpan.</p>
           </div>
         </div>
-        <div class="flex justify-end gap-2 pt-4 border-t">
-          <button type="button" onclick="closeModal('modalAddOrder')" class="px-4 py-2 border rounded-lg">Batal</button>
-          <button type="submit" id="btnSaveAddOrder" class="px-5 py-2 bg-blue-900 text-white font-bold rounded-lg hover:bg-slate-900">Simpan Order</button>
+
+        <!-- MAIN LAYOUT 2 KOLOM -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+          
+          <!-- KOLOM KIRI (INFORMASI UTAMA) -->
+          <div class="lg:col-span-8 space-y-3">
+            <div class="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-xs">
+              <div class="bg-slate-700 text-white font-bold px-3 py-1.5">Informasi Utama</div>
+              
+              <div class="p-3 space-y-3">
+                <!-- AKUN CUSTOMER -->
+                <div class="grid grid-cols-12 gap-2 items-center">
+                  <label class="col-span-3 font-bold text-slate-700">Akun Customer / Client *</label>
+                  <div class="col-span-9">
+                    <input type="text" id="addClientName" required placeholder="Ketik Nama PT / Client Pengirim..." class="w-full p-1.5 border font-bold rounded bg-slate-50">
+                  </div>
+                </div>
+
+                <!-- DUAL INFORMASI: PENGIRIM VS PENERIMA -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-200">
+                  <!-- INFORMASI PENGIRIM -->
+                  <div class="space-y-2">
+                    <div class="font-bold text-blue-900 border-b pb-1 flex items-center gap-1">
+                      <i class="fa-solid fa-paper-plane text-xs"></i> Informasi Pengirim
+                    </div>
+                    <div>
+                      <label class="text-[11px] font-semibold text-slate-600">Nama Pengirim</label>
+                      <input type="text" placeholder="Nama Pengirim" class="w-full p-1.5 border rounded font-semibold">
+                    </div>
+                    <div>
+                      <label class="text-[11px] font-semibold text-slate-600">Alamat Pengirim</label>
+                      <textarea rows="3" placeholder="Alamat asal penjemputan..." class="w-full p-1.5 border rounded text-xs"></textarea>
+                    </div>
+                  </div>
+
+                  <!-- INFORMASI PENERIMA -->
+                  <div class="space-y-2">
+                    <div class="font-bold text-blue-900 border-b pb-1 flex items-center gap-1">
+                      <i class="fa-solid fa-location-dot text-xs"></i> Informasi Penerima
+                    </div>
+                    <div>
+                      <label class="text-[11px] font-semibold text-slate-600">Nama Consignee / Penerima *</label>
+                      <input type="text" id="addConsigneeName" required placeholder="PT / Nama Penerima..." class="w-full p-1.5 border rounded font-semibold">
+                    </div>
+                    <div>
+                      <label class="text-[11px] font-semibold text-slate-600">Alamat Penerima</label>
+                      <textarea id="addConsigneeAddress" rows="3" placeholder="Alamat lengkap penerima..." class="w-full p-1.5 border rounded text-xs"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TABEL DIMENSI & KOLI -->
+            <div class="bg-white p-3 rounded-lg border border-slate-200 overflow-x-auto shadow-xs">
+              <table class="w-full text-center text-xs border-collapse">
+                <thead>
+                  <tr class="border-b font-bold text-slate-600">
+                    <th class="p-1 w-16">KOLI *</th>
+                    <th class="p-1" colspan="3">DIMENSI (P x L x T)</th>
+                    <th class="p-1 w-20">BERAT (KG) *</th>
+                    <th class="p-1">DESKRIPSI / BRG</th>
+                    <th class="p-1 w-16">UNIT</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="p-1"><input type="number" id="addColy" value="1" min="1" required class="w-full p-1 border text-center font-bold"></td>
+                    <td class="p-1"><input type="number" value="0" placeholder="P" class="w-full p-1 border text-center"></td>
+                    <td class="p-1"><input type="number" value="0" placeholder="L" class="w-full p-1 border text-center"></td>
+                    <td class="p-1"><input type="number" value="0" placeholder="T" class="w-full p-1 border text-center"></td>
+                    <td class="p-1"><input type="number" id="addWeight" step="0.1" value="1" required class="w-full p-1 border text-center font-bold text-blue-900"></td>
+                    <td class="p-1"><input type="text" placeholder="BOX / DUS / CARTON" class="w-full p-1 border"></td>
+                    <td class="p-1"><input type="text" value="BOX" class="w-full p-1 border text-center font-bold"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- KOLOM KANAN (INFORMASI SERVICE & BIAYA) -->
+          <div class="lg:col-span-4 bg-white rounded-lg border border-slate-200 overflow-hidden shadow-xs space-y-3">
+            <div class="bg-slate-700 text-white font-bold px-3 py-1.5 uppercase">Informasi Service & Biaya</div>
+            
+            <div class="p-3 space-y-2.5">
+              <div>
+                <label class="font-bold text-slate-700 block mb-0.5">Service Layanan *</label>
+                <select id="addService" class="w-full p-1.5 border rounded font-bold text-slate-800">
+                  <option value="REGULER">REGULER - DARAT</option>
+                  <option value="CHARTER BV">CHARTER BV</option>
+                  <option value="EXPRESS">EXPRESS - UDARA</option>
+                  <option value="TRUCKING">TRUCKING</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="font-bold text-slate-700 block mb-0.5">Biaya Charge Tagihan (Rp) *</label>
+                <input type="number" id="addCharge" value="0" min="0" required class="w-full p-2 border font-extrabold text-right text-emerald-800 text-sm bg-emerald-50/50 rounded">
+              </div>
+
+              <div class="space-y-1.5 pt-2 border-t border-slate-200">
+                <div>
+                  <label class="font-bold text-slate-700 block mb-0.5">Pembayaran *</label>
+                  <select class="w-full p-1 border rounded font-bold text-slate-800">
+                    <option value="CREDIT">CREDIT (INVOICE)</option>
+                    <option value="CASH">CASH</option>
+                    <option value="COD">COD</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOOTER BOTTOM BUTTONS -->
+        <div class="bg-white p-3 rounded-lg border border-slate-200 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modalAddOrder')" class="px-4 py-1.5 border rounded font-bold hover:bg-slate-100">Batal</button>
+          <button type="submit" id="btnSaveAddOrder" class="px-5 py-1.5 bg-blue-900 text-white font-bold rounded hover:bg-slate-900 shadow">Simpan Order Baru</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL 2: EDIT ORDER MANAGEMENT -->
-  <div id="modalUpdateOrder" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-      <div class="bg-blue-900 text-white p-5 flex justify-between items-center">
-        <h3 id="editModalTitle" class="text-lg font-bold"><i class="fa-solid fa-pen-to-square mr-2"></i> Edit Data Order</h3>
-        <button onclick="closeModal('modalUpdateOrder')" class="text-white hover:text-amber-400"><i class="fa-solid fa-xmark text-xl"></i></button>
+  <!-- MODAL EDIT / INPUT DATA ORDER (GAYA TMS ERP LOGISTIK) -->
+  <div id="modalUpdateOrder" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs hidden flex items-center justify-center p-2 z-50">
+    <div class="bg-white rounded-xl max-w-7xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[96vh] text-xs">
+      
+      <!-- HEADER BAR GREEN ERP -->
+      <div class="bg-emerald-700 text-white px-5 py-2.5 flex justify-between items-center flex-shrink-0">
+        <h3 id="editModalTitle" class="text-sm font-bold flex items-center gap-2">
+          <i class="fa-solid fa-boxes-packing"></i> Edit Data Order
+        </h3>
+        <div class="flex items-center gap-3">
+          <button type="submit" form="formUpdateOrder" title="Simpan" class="hover:text-amber-300 transition text-sm"><i class="fa-solid fa-floppy-disk"></i></button>
+          <button type="button" onclick="loadData()" title="Refresh" class="hover:text-amber-300 transition text-sm"><i class="fa-solid fa-rotate-right"></i></button>
+          <button type="button" onclick="closeModal('modalUpdateOrder')" title="Tutup" class="hover:text-amber-300 transition text-sm"><i class="fa-solid fa-xmark text-base"></i></button>
+        </div>
       </div>
-      <form id="formUpdateOrder" onsubmit="submitUpdateOrder(event)" class="p-6 overflow-y-auto space-y-4 text-sm flex-1">
+
+      <form id="formUpdateOrder" onsubmit="submitUpdateOrder(event)" class="p-4 overflow-y-auto space-y-4 flex-1 bg-slate-100">
         <input type="hidden" id="editRowIndex">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block font-semibold mb-1">DO Customer</label>
-            <input type="text" id="editDoCustomer" class="w-full border rounded-lg p-2">
+
+        <!-- TOP BAR: AWB, ORIGIN, DESTINATION & RINGKASAN TARIF -->
+        <div class="bg-white p-3 rounded-lg border border-slate-200 grid grid-cols-1 md:grid-cols-12 gap-3 items-start shadow-xs">
+          <!-- NOMOR AWB & DO -->
+          <div class="md:col-span-3 space-y-1">
+            <label class="font-bold text-slate-600 block">NOMOR AWB</label>
+            <input type="text" id="editAwbNumber" readonly class="w-full p-2 bg-slate-200 border border-slate-300 rounded font-black text-slate-800 outline-none">
+            <input type="text" id="editDoCustomer" placeholder="No. Reff / DO Customer" class="w-full p-2 bg-amber-950 text-amber-100 font-bold rounded text-xs outline-none">
           </div>
-          <div>
-            <label class="block font-semibold mb-1">Status Pengiriman</label>
-            <select id="editTrackTrace" class="w-full border rounded-lg p-2 font-bold text-blue-900">
-              <option value="New Order">New Order</option>
-              <option value="To Hub">To Hub</option>
-              <option value="On Delivery">On Delivery</option>
-              <option value="Delivered">Delivered</option>
-            </select>
+
+          <!-- ASAL (ORIGIN) -->
+          <div class="md:col-span-3 space-y-1">
+            <div class="flex gap-1">
+              <div class="w-1/3">
+                <label class="font-bold text-slate-600 block">TLC</label>
+                <input type="text" id="editOriginTlc" value="JKT" readonly class="w-full p-1.5 bg-slate-100 border text-center font-bold">
+              </div>
+              <div class="w-2/3">
+                <label class="font-bold text-slate-600 block">ASAL *</label>
+                <input type="text" id="editOrigin" required class="w-full p-1.5 bg-slate-800 text-white font-bold rounded uppercase">
+              </div>
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 block">Print Code</label>
+              <input type="text" id="editPrintCode" placeholder="Print Code" class="w-full p-1 border rounded text-[11px]">
+            </div>
           </div>
-          <div>
-            <label class="block font-semibold mb-1">Client Name</label>
-            <input type="text" id="editClientName" class="w-full border rounded-lg p-2">
+
+          <!-- TUJUAN (DESTINATION) -->
+          <div class="md:col-span-3 space-y-1">
+            <div class="flex gap-1">
+              <div class="w-1/3">
+                <label class="font-bold text-slate-600 block">TLC</label>
+                <input type="text" id="editDestTlc" placeholder="TLC" class="w-full p-1.5 bg-slate-100 border text-center font-bold">
+              </div>
+              <div class="w-2/3">
+                <label class="font-bold text-slate-600 block">TUJUAN *</label>
+                <input type="text" id="editDestination" required class="w-full p-1.5 border border-slate-300 font-bold rounded uppercase">
+              </div>
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 block">REFF NO</label>
+              <input type="text" id="editReffNo" placeholder="REFF NO" class="w-full p-1 border rounded text-[11px]">
+            </div>
           </div>
-          <div>
-            <label class="block font-semibold mb-1">Consignee Name</label>
-            <input type="text" id="editConsigneeName" class="w-full border rounded-lg p-2">
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Origin</label>
-            <input type="text" id="editOrigin" class="w-full border rounded-lg p-2">
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Destination</label>
-            <input type="text" id="editDestination" class="w-full border rounded-lg p-2">
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Berat (Kg)</label>
-            <input type="number" id="editWeight" step="0.1" class="w-full border rounded-lg p-2">
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Charge (Rp)</label>
-            <input type="number" id="editCharge" class="w-full border rounded-lg p-2 font-bold text-blue-900">
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Penerima (Receiver Name)</label>
-            <input type="text" id="editReceiverName" class="w-full border rounded-lg p-2">
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Vendor Courier</label>
-            <input type="text" id="editVendorBy" class="w-full border rounded-lg p-2">
+
+          <!-- RINGKASAN TARIF KANAN ATAS -->
+          <div class="md:col-span-3 bg-slate-50 p-2 rounded border border-slate-200 text-[11px] space-y-0.5 font-semibold">
+            <div class="flex justify-between"><span>TARIF DASAR :</span> <span class="text-sky-600 font-bold" id="lblTarifDasar">Rp 0</span></div>
+            <div class="flex justify-between"><span>TARIF TOTAL :</span> <span class="text-sky-600 font-bold" id="lblTarifTotal">Rp 0</span></div>
+            <div class="flex justify-between font-black text-rose-600"><span>TOTAL BAYAR :</span> <span id="lblTotalBayar">Rp 0</span></div>
+            <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-200">
+              <div>VENDOR BY : <span id="lblVendorBy" class="font-bold text-slate-700">-</span></div>
+              <div>INVOICE NO : <span id="lblInvoiceNo" class="font-bold text-slate-700">-</span></div>
+            </div>
           </div>
         </div>
-        <div class="flex justify-end gap-2 pt-4 border-t">
-          <button type="button" onclick="closeModal('modalUpdateOrder')" class="px-4 py-2 border rounded-lg">Batal</button>
-          <button type="submit" id="btnSaveUpdateOrder" class="px-5 py-2 bg-blue-900 text-white font-bold rounded-lg hover:bg-slate-900">Simpan Perubahan</button>
+
+        <!-- MAIN LAYOUT 2 KOLOM (INFORMASI UTAMA VS INFORMASI SERVICE) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+          
+          <!-- KOLOM KIRI (INFORMASI UTAMA: 8 KOLOM) -->
+          <div class="lg:col-span-8 space-y-3">
+            <div class="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-xs">
+              <div class="bg-slate-600 text-white font-bold px-3 py-1.5">Informasi Utama</div>
+              
+              <div class="p-3 space-y-3">
+                <!-- AKUN CUSTOMER -->
+                <div class="grid grid-cols-12 gap-2 items-center">
+                  <label class="col-span-3 font-bold text-slate-700">Akun Customer *</label>
+                  <div class="col-span-9 flex gap-2">
+                    <input type="text" id="editClientName" required class="w-2/3 p-1.5 border font-bold rounded bg-slate-50">
+                    <input type="text" id="editClientCode" readonly placeholder="Kode Client" class="w-1/3 p-1.5 bg-slate-100 border rounded text-slate-500">
+                  </div>
+                </div>
+
+                <!-- DUAL INFORMASI: PENGIRIM VS PENERIMA -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-200">
+                  <!-- INFORMASI PENGIRIM -->
+                  <div class="space-y-2">
+                    <div class="font-bold text-sky-700 border-b pb-1 flex items-center gap-1">
+                      <i class="fa-solid fa-paper-plane text-xs"></i> Informasi Pengirim
+                    </div>
+                    <div>
+                      <label class="text-[11px] font-semibold text-slate-600">Nama *</label>
+                      <input type="text" id="editSenderName" class="w-full p-1.5 border rounded font-semibold">
+                    </div>
+                    <div>
+                      <label class="text-[11px] font-semibold text-slate-600">Alamat *</label>
+                      <textarea id="editSenderAddress" rows="3" class="w-full p-1.5 border rounded text-xs"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>
+                        <label class="text-[10px] font-semibold text-slate-600">Kecamatan</label>
+                        <input type="text" id="editSenderKec" class="w-full p-1 border rounded">
+                      </div>
+                      <div>
+                        <label class="text-[10px] font-semibold text-slate-600">Kota/Kodepos</label>
+                        <input type="text" id="editSenderCity" class="w-full p-1 border rounded">
+                      </div>
+                    </div>
+                    <div>
+                      <label class="text-[10px] font-semibold text-slate-600">HP / PIC *</label>
+                      <input type="text" id="editSenderPic" class="w-full p-1 border rounded">
+                    </div>
+                  </div>
+
+                  <!-- INFORMASI PENERIMA -->
+                  <div class="space-y-2">
+                    <div class="font-bold text-sky-700 border-b pb-1 flex items-center gap-1">
+                      <i class="fa-solid fa-location-dot text-xs"></i> Informasi Penerima
+                    </div>
+                    <div>
+                      <label class="text-[11px] font-semibold text-slate-600">Nama *</label>
+                      <input type="text" id="editConsigneeName" required class="w-full p-1.5 border rounded font-semibold">
+                    </div>
+                    <div>
+                      <label class="text-[11px] font-semibold text-slate-600">Alamat *</label>
+                      <textarea id="editConsigneeAddress" rows="3" class="w-full p-1.5 border rounded text-xs"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>
+                        <label class="text-[10px] font-semibold text-slate-600">Kecamatan</label>
+                        <input type="text" id="editConsigneeKec" class="w-full p-1 border rounded">
+                      </div>
+                      <div>
+                        <label class="text-[10px] font-semibold text-slate-600">Kota/Kodepos</label>
+                        <input type="text" id="editConsigneeCity" class="w-full p-1 border rounded">
+                      </div>
+                    </div>
+                    <div>
+                      <label class="text-[10px] font-semibold text-slate-600">HP / PIC *</label>
+                      <input type="text" id="editConsigneePic" class="w-full p-1 border rounded">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TABEL DIMENSI & KOLI BEBAN -->
+            <div class="bg-white p-3 rounded-lg border border-slate-200 overflow-x-auto shadow-xs">
+              <table class="w-full text-center text-xs border-collapse">
+                <thead>
+                  <tr class="border-b font-bold text-slate-600">
+                    <th class="p-1 w-16">KOLI</th>
+                    <th class="p-1" colspan="3">DIMENSI (P x L x T)</th>
+                    <th class="p-1 w-16">V. VOL</th>
+                    <th class="p-1 w-20">W. KG *</th>
+                    <th class="p-1 w-20">W. CMP</th>
+                    <th class="p-1">DESKRIPSI</th>
+                    <th class="p-1 w-16">UNIT</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="p-1"><input type="number" id="editColy" value="1" min="1" class="w-full p-1 border text-center font-bold"></td>
+                    <td class="p-1"><input type="number" id="editDimP" value="0" placeholder="P" class="w-full p-1 border text-center"></td>
+                    <td class="p-1"><input type="number" id="editDimL" value="0" placeholder="L" class="w-full p-1 border text-center"></td>
+                    <td class="p-1"><input type="number" id="editDimT" value="0" placeholder="T" class="w-full p-1 border text-center"></td>
+                    <td class="p-1"><input type="number" id="editVVol" value="0" readonly class="w-full p-1 bg-slate-100 text-center"></td>
+                    <td class="p-1"><input type="number" id="editWeight" step="0.1" value="1" required class="w-full p-1 border text-center font-bold text-emerald-800"></td>
+                    <td class="p-1"><input type="number" id="editWCmp" value="1" readonly class="w-full p-1 bg-slate-100 text-center font-bold"></td>
+                    <td class="p-1"><input type="text" id="editDeskripsi" placeholder="BOX / DUS" class="w-full p-1 border"></td>
+                    <td class="p-1"><input type="text" id="editUnit" value="BOX" class="w-full p-1 border text-center font-bold"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- KOLOM KANAN (INFORMASI SERVICE: 4 KOLOM) -->
+          <div class="lg:col-span-4 bg-white rounded-lg border border-slate-200 overflow-hidden shadow-xs space-y-3">
+            <div class="bg-slate-600 text-white font-bold px-3 py-1.5 uppercase">Informasi Service</div>
+            
+            <div class="p-3 space-y-2.5">
+              <div>
+                <label class="font-bold text-slate-700 block mb-0.5">Service *</label>
+                <select id="editService" class="w-full p-1.5 border rounded font-bold text-slate-800">
+                  <option value="REGULER">REGULER - DARAT</option>
+                  <option value="CHARTER BV">CHARTER BV</option>
+                  <option value="EXPRESS">EXPRESS - UDARA</option>
+                  <option value="KUBIKASI - DARAT">KUBIKASI - DARAT</option>
+                  <option value="TRUCKING">TRUCKING</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="font-bold text-slate-700 block mb-0.5">Pembayaran *</label>
+                <select id="editPaymentType" class="w-full p-1.5 border rounded font-bold text-slate-800">
+                  <option value="CREDIT">CREDIT (INVOICE)</option>
+                  <option value="CASH">CASH</option>
+                  <option value="COD">COD</option>
+                </select>
+              </div>
+
+              <div class="space-y-1.5 pt-2 border-t border-slate-200">
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-600">Charge Tagihan (Rp) *</span>
+                  <input type="number" id="editCharge" required class="w-32 p-1 border font-bold text-right text-emerald-800">
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-600">Charge Packing</span>
+                  <input type="number" id="editChargePacking" value="0" class="w-32 p-1 border text-right">
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-600">Charge Insurance</span>
+                  <input type="number" id="editChargeInsurance" value="0" class="w-32 p-1 border text-right">
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-600">Charge Other</span>
+                  <input type="number" id="editChargeOther" value="0" class="w-32 p-1 border text-right">
+                </div>
+              </div>
+
+              <div class="space-y-1.5 pt-2 border-t border-slate-200">
+                <div>
+                  <label class="font-bold text-slate-700 block mb-0.5">POD Return *</label>
+                  <select id="editPodReturn" class="w-full p-1 border rounded">
+                    <option value="Ya">Ya</option>
+                    <option value="Tidak">Tidak</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="font-bold text-slate-700 block mb-0.5">Tgl Order</label>
+                  <input type="text" id="editOrderDate" class="w-full p-1 border rounded bg-slate-50">
+                </div>
+                <div>
+                  <label class="font-bold text-slate-700 block mb-0.5">Status Pengiriman *</label>
+                  <select id="editTrackTrace" class="w-full p-1.5 border rounded font-bold text-blue-900">
+                    <option value="New Order">New Order</option>
+                    <option value="To Hub">To Hub</option>
+                    <option value="On Delivery">On Delivery</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Canceled">Canceled</option>
+                    <option value="Returned">Returned</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="font-bold text-slate-700 block mb-0.5">Vendor Courier</label>
+                  <input type="text" id="editVendorBy" placeholder="Nama Driver / Vendor" class="w-full p-1 border rounded">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOOTER BOTTOM BUTTONS & TIMESTAMP -->
+        <div class="bg-white p-3 rounded-lg border border-slate-200 flex justify-between items-center">
+          <div class="text-[11px] text-slate-400 italic" id="lblEntryStamp">Entry By : System#2026</div>
+          <div class="flex gap-2">
+            <button type="button" onclick="closeModal('modalUpdateOrder')" class="px-4 py-1.5 border rounded font-bold hover:bg-slate-100">Batal</button>
+            <button type="submit" id="btnSaveUpdateOrder" class="px-5 py-1.5 bg-emerald-700 text-white font-bold rounded hover:bg-emerald-800 shadow">Simpan Perubahan</button>
+          </div>
         </div>
       </form>
     </div>
   </div>
-
   <!-- MODAL EDIT PROFORMA INVOICE -->
   <div id="modalEditProforma" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
