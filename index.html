@@ -93,6 +93,9 @@
             <a href="#" id="nav-pricePage" onclick="switchPage('pricePage')" class="nav-item flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
               <i class="fa-solid fa-tags w-4 text-amber-400"></i> Price (Tarif)
             </a>
+            <a href="#" id="nav-vendorPricePage" onclick="switchPage('vendorPricePage')" class="nav-item flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
+              <i class="fa-solid fa-money-bill-transfer w-4 text-teal-400"></i> Price Vendor
+            </a>
           </div>
         </div>
 
@@ -755,6 +758,114 @@
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      <!-- ================= PAGE MASTER PRICE VENDOR ================= -->
+      <div id="vendorPricePage" class="page-content hidden space-y-6">
+        
+        <!-- VIEW 1: DAFTAR VENDOR -->
+        <div id="vpViewVendorList" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="bg-teal-700 text-white p-4 px-6 flex justify-between items-center shadow-md">
+            <div class="flex items-center gap-2 font-bold text-lg">
+              <i class="fa-solid fa-money-bill-transfer text-amber-300"></i> Harga Modal (Pilih Vendor)
+            </div>
+          </div>
+          <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+            <input type="text" id="vpSearchInput" onkeyup="renderVendorPriceList()" placeholder="Cari nama vendor..." class="w-64 pl-3 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+                <tr>
+                  <th class="p-3.5 w-12 text-center">#</th>
+                  <th class="p-3.5">Nama Vendor</th>
+                  <th class="p-3.5 text-center">Total Rute Harga</th>
+                  <th class="p-3.5 text-center w-32">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="vpVendorTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- VIEW 2: DETAIL HARGA PER VENDOR -->
+        <div id="vpViewDetail" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="bg-teal-800 text-white p-4 px-6 flex justify-between items-center shadow-md">
+            <div class="flex items-center gap-3">
+              <button onclick="closeVendorPriceDetail()" class="bg-teal-900 hover:bg-slate-900 text-white p-2 rounded-lg transition shadow-sm" title="Kembali"><i class="fa-solid fa-arrow-left"></i></button>
+              <div class="font-bold text-lg" id="vpDetailTitle">Harga Modal - Vendor</div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <input type="file" id="importVpExcel" class="hidden" accept=".xlsx, .xls" onchange="handleImportVpExcel(event)">
+              <button onclick="document.getElementById('importVpExcel').click()" class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-import"></i> Import
+              </button>
+              <button onclick="exportVpToExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-excel"></i> Export
+              </button>
+              <button onclick="openModalAddVp()" class="bg-teal-600 hover:bg-teal-500 text-white w-9 h-9 rounded-full flex items-center justify-center font-bold text-lg shadow transition ml-2">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+                <tr>
+                  <th class="p-3.5 w-12 text-center">#</th>
+                  <th class="p-3.5">Origin (Asal)</th>
+                  <th class="p-3.5">Destination (Tujuan)</th>
+                  <th class="p-3.5 text-center">Service</th>
+                  <th class="p-3.5 text-right">Harga Modal (Rp)</th>
+                  <th class="p-3.5 text-center w-28">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="vpDetailTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL ADD / EDIT VENDOR PRICE -->
+      <div id="modalVp" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100">
+          <div class="bg-teal-700 text-white p-4 px-6 flex justify-between items-center">
+            <h3 id="modalVpTitle" class="font-bold text-base"><i class="fa-solid fa-tag mr-2"></i>Tambah Harga Modal</h3>
+            <button onclick="closeModal('modalVp')" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <form id="formVp" onsubmit="submitVpForm(event)" class="p-6 space-y-4">
+            <input type="hidden" id="vpIdInput">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Vendor</label>
+              <input type="text" id="vpVendorInput" readonly class="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-teal-900 outline-none">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Origin (Asal) *</label>
+                <input type="text" id="vpOriginInput" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none uppercase">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Destination (Tujuan) *</label>
+                <input type="text" id="vpDestInput" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none uppercase">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Service Layanan</label>
+                <input type="text" id="vpServiceInput" placeholder="REGULER" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none uppercase">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Harga Modal (Rp) *</label>
+                <input type="number" id="vpAmountInput" required min="0" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none text-rose-700">
+              </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+              <button type="button" onclick="closeModal('modalVp')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">Batal</button>
+              <button type="submit" id="btnSaveVp" class="px-5 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-bold shadow-md transition">Simpan Harga</button>
+            </div>
+          </form>
         </div>
       </div>
 
