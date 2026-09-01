@@ -21,6 +21,7 @@ function autoOpenParentSubmenu(pageId) {
     'clientPage': 'submenuMaster',
     'driverPage': 'submenuMaster',
     'pricePage': 'submenuMaster',
+    'vendorPricePage': 'submenuMaster',
     'publishInvoicePage': 'submenuInvoice',
     'proformaInvoicePage': 'submenuInvoice',
     'createInvoicePage': 'submenuInvoice',
@@ -91,6 +92,9 @@ function switchPage(pageId) {
     loadDriversTable();
   } else if (pageId === 'pricePage') {
     document.getElementById('pageTitle').innerText = 'Master Price';
-    initPricePage(); 
+    initPricePage();
+  } else if (pageId === 'vendorPricePage') { // <-- TAMBAHKAN BLOK INI
+    document.getElementById('pageTitle').innerText = 'Master Price (Vendor)';
+    initVendorPricePage();
   }
 }
