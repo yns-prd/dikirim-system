@@ -301,20 +301,88 @@ function renderYearlySummary() {
 }
 
 function filterTable() {
-  const query = document.getElementById('searchInput').value.toLowerCase();
-  filteredData = rawData.filter(item => (item.awbNumber || '').toLowerCase().includes(query) || (item.clientName || '').toLowerCase().includes(query) || (item.doCustomer || '').toLowerCase().includes(query));
+  const query = (document.getElementById('searchInput').value || '').toLowerCase();
+  filteredData = rawData.filter(item => 
+    (item.awbNumber || '').toLowerCase().includes(query) || 
+    (item.clientName || '').toLowerCase().includes(query) || 
+    (item.doCustomer || '').toLowerCase().includes(query)
+  );
   currentPage = 1;
   renderPaginatedTable();
 }
 
 function renderPaginatedTable() {
-  const pageSize = parseInt(document.getElementById('pageSizeSelect').value) || 20;
+  const pageSize = parseInt(document.getElementById('pageSizeSelect').value) || 10;
   const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
   const startIndex = (currentPage - 1) * pageSize;
   const pageData = filteredData.slice(startIndex, startIndex + pageSize);
 
   renderTable(pageData);
-  document.getElementById('paginationInfo').innerText = `Menampilkan ${startIndex + 1} - ${Math.min(startIndex + pageSize, totalItems)} dari ${totalItems} order`;
+  
+  // Update Teks Info
+  document.getElementById('paginationInfo').innerText = `Menampilkan ${totalItems > 0 ? startIndex + 1 : 0} - ${Math.min(startIndex + pageSize, totalItems)} dari ${totalItems} order`;
+  
+  // Render Tombol Halaman 1, 2, 3 dst
+  renderPaginationButtons(totalPages);
+}
+
+function changePage(page) {
+  const pageSize = parseInt(document.getElementById('pageSizeSelect').value) || 10;
+  const totalPages = Math.ceil(filteredData.length / pageSize) || 1;
+  if (page < 1 || page > totalPages) return;
+  currentPage = page;
+  renderPaginatedTable();
+}
+
+function renderPaginationButtons(totalPages) {
+  const container = document.getElementById('paginationButtons');
+  if (!container) return;
+
+  if (totalPages <= 1) {
+    container.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+
+  // Tombol Previous
+  html += `
+    <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled class="opacity-40 cursor-not-allowed px-2.5 py-1 rounded bg-slate-200 text-slate-500 font-bold text-xs"' : 'class="px-2.5 py-1 rounded bg-slate-200 hover:bg-blue-900 hover:text-white text-slate-700 font-bold text-xs transition"'}>
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+  `;
+
+  // Logika Angka Halaman (Smart Windowing)
+  let startPage = Math.max(1, currentPage - 2);
+  let endPage = Math.min(totalPages, currentPage + 2);
+
+  if (startPage > 1) {
+    html += `<button onclick="changePage(1)" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-blue-900 hover:text-white text-slate-700 font-bold text-xs transition">1</button>`;
+    if (startPage > 2) html += `<span class="px-1 text-slate-400 font-bold">...</span>`;
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    if (i === currentPage) {
+      html += `<button class="px-2.5 py-1 rounded bg-blue-900 text-white font-extrabold text-xs shadow-sm">${i}</button>`;
+    } else {
+      html += `<button onclick="changePage(${i})" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-blue-900 hover:text-white text-slate-700 font-bold text-xs transition">${i}</button>`;
+    }
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) html += `<span class="px-1 text-slate-400 font-bold">...</span>`;
+    html += `<button onclick="changePage(${totalPages})" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-blue-900 hover:text-white text-slate-700 font-bold text-xs transition">${totalPages}</button>`;
+  }
+
+  // Tombol Next
+  html += `
+    <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled class="opacity-40 cursor-not-allowed px-2.5 py-1 rounded bg-slate-200 text-slate-500 font-bold text-xs"' : 'class="px-2.5 py-1 rounded bg-slate-200 hover:bg-blue-900 hover:text-white text-slate-700 font-bold text-xs transition"'}>
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
+  `;
+
+  container.innerHTML = html;
 }
 
 function renderTable(data) {
