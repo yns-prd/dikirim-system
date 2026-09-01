@@ -385,9 +385,13 @@ function renderPaginationButtons(totalPages) {
   container.innerHTML = html;
 }
 
+// ==================== RENDER TABEL ORDER MANAGEMENT ====================
 function renderTable(data) {
   const tbody = document.getElementById('tableBody');
-  if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="text-center p-6 text-slate-400">Tidak ada data order.</td></tr>'; return; }
+  if (!data || data.length === 0) { 
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-6 text-slate-400">Tidak ada data order.</td></tr>'; 
+    return; 
+  }
 
   tbody.innerHTML = data.map(item => `
     <tr class="hover:bg-blue-50/50 transition">
@@ -396,8 +400,8 @@ function renderTable(data) {
       <td class="p-3 font-semibold">${item.clientName}</td>
       <td class="p-3 text-slate-600">${item.origin} → ${item.destination}</td>
       <td class="p-3 font-medium">${item.consigneeName}</td>
-      <td class="p-3"><span class="bg-slate-100 px-2 py-1 rounded text-xs">${item.service}</span> <div class="text-xs text-slate-500 mt-0.5">${item.weight} Kg</div></td>
-      <td class="p-3"><span class="bg-blue-100 text-blue-900 px-2.5 py-1 rounded-full text-xs font-bold">${item.trackTrace}</span></td>
+      <td class="p-3 text-center"><span class="bg-slate-100 px-2 py-1 rounded text-xs">${item.service}</span> <div class="text-xs text-slate-500 mt-0.5">${item.weight} Kg</div></td>
+      <td class="p-3 text-center"><span class="${getStatusBadgeClass(item.trackTrace)} px-2.5 py-1 rounded-full text-xs font-bold">${item.trackTrace}</span></td>
       <td class="p-3 text-center"><button onclick="openUpdateModal(${item.rowIndex})" class="bg-blue-50 text-blue-900 border border-blue-200 px-3 py-1 rounded text-xs font-bold"><i class="fa-solid fa-pen-to-square"></i> Edit</button></td>
     </tr>
   `).join('');
@@ -508,4 +512,25 @@ function submitUpdateOrder(e) {
       btn.innerText = 'Simpan Perubahan';
       alert('Eror: ' + err.message);
     });
+}
+
+// ==================== HELPER WARNA STATUS BADGE ====================
+function getStatusBadgeClass(status) {
+  const st = String(status || '').trim().toLowerCase();
+  
+  if (st === 'new order') {
+    return 'bg-orange-100 text-orange-800 border border-orange-300';
+  } else if (st === 'to hub') {
+    return 'bg-blue-100 text-blue-800 border border-blue-300';
+  } else if (st === 'on delivery') {
+    return 'bg-pink-100 text-pink-800 border border-pink-300';
+  } else if (st === 'delivered') {
+    return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
+  } else if (st === 'canceled' || st === 'cancelled') {
+    return 'bg-rose-100 text-rose-800 border border-rose-300';
+  } else if (st === 'returned' || st === 'returnend') {
+    return 'bg-amber-900/10 text-amber-950 border border-amber-900/30'; // Warna Coklat
+  }
+  
+  return 'bg-slate-100 text-slate-800 border border-slate-300';
 }
