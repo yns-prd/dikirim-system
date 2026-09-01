@@ -459,19 +459,37 @@ function openUpdateModal(rowIndex) {
   const item = rawData.find(d => Number(d.rowIndex) === Number(rowIndex));
   if (!item) return;
 
+  // Header & Ringkasan Atas
   document.getElementById('editRowIndex').value = item.rowIndex;
+  document.getElementById('editAwbNumber').value = item.awbNumber || '-';
   document.getElementById('editDoCustomer').value = item.doCustomer || '';
-  document.getElementById('editTrackTrace').value = item.trackTrace || 'New Order';
+  document.getElementById('editOrigin').value = item.origin || 'JAKARTA';
+  document.getElementById('editDestination').value = item.destination || '';
+  
+  const formattedCharge = 'Rp ' + (Number(item.charge) || 0).toLocaleString('id-ID');
+  document.getElementById('lblTarifDasar').innerText = formattedCharge;
+  document.getElementById('lblTarifTotal').innerText = formattedCharge;
+  document.getElementById('lblTotalBayar').innerText = formattedCharge;
+  document.getElementById('lblVendorBy').innerText = item.vendorBy || '-';
+  document.getElementById('lblInvoiceNo').innerText = item.invoiceNumber || '-';
+
+  // Informasi Pengirim & Penerima
   document.getElementById('editClientName').value = item.clientName || '';
   document.getElementById('editConsigneeName').value = item.consigneeName || '';
-  document.getElementById('editOrigin').value = item.origin || '';
-  document.getElementById('editDestination').value = item.destination || '';
-  document.getElementById('editWeight').value = item.weight || 0;
+  document.getElementById('editConsigneeAddress').value = item.consigneeAddress || '';
+
+  // Koli & Dimensi
+  document.getElementById('editColy').value = item.coly || 1;
+  document.getElementById('editWeight').value = item.weight || 1;
+
+  // Informasi Service & Biaya
+  document.getElementById('editService').value = item.service || 'REGULER';
   document.getElementById('editCharge').value = item.charge || 0;
-  document.getElementById('editReceiverName').value = item.receiverName || '';
+  document.getElementById('editOrderDate').value = item.orderDate || '';
+  document.getElementById('editTrackTrace').value = item.trackTrace || 'New Order';
   document.getElementById('editVendorBy').value = item.vendorBy || '';
 
-  document.getElementById('editModalTitle').innerText = `Edit Order ${item.awbNumber}`;
+  document.getElementById('editModalTitle').innerText = `Edit Data Order - ${item.awbNumber}`;
   openModal('modalUpdateOrder');
 }
 
@@ -483,22 +501,24 @@ function submitUpdateOrder(e) {
     trackTrace: document.getElementById('editTrackTrace').value,
     clientName: document.getElementById('editClientName').value,
     consigneeName: document.getElementById('editConsigneeName').value,
+    consigneeAddress: document.getElementById('editConsigneeAddress').value,
     origin: document.getElementById('editOrigin').value,
     destination: document.getElementById('editDestination').value,
+    service: document.getElementById('editService').value,
     weight: document.getElementById('editWeight').value,
+    coly: document.getElementById('editColy').value,
     charge: document.getElementById('editCharge').value,
-    receiverName: document.getElementById('editReceiverName').value,
     vendorBy: document.getElementById('editVendorBy').value
   };
 
   const btn = document.getElementById('btnSaveUpdateOrder');
   btn.disabled = true;
-  btn.innerText = 'Menyimpan...';
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
 
   apiPost('updateOrder', { formData: formData })
     .then(res => {
       btn.disabled = false;
-      btn.innerText = 'Simpan Perubahan';
+      btn.innerHTML = `Simpan Perubahan`;
       if (res.status === 'success') {
         alert(res.message);
         closeModal('modalUpdateOrder');
@@ -509,8 +529,8 @@ function submitUpdateOrder(e) {
     })
     .catch(err => {
       btn.disabled = false;
-      btn.innerText = 'Simpan Perubahan';
-      alert('Eror: ' + err.message);
+      btn.innerHTML = `Simpan Perubahan`;
+      alert('Eror: ' + (err.message || err));
     });
 }
 
