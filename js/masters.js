@@ -826,3 +826,256 @@ async function handleImportPriceExcel(event) {
   
   reader.readAsArrayBuffer(file);
 }
+
+// ==================== MASTER PRICE VENDOR ====================
+let vendorPrices = [];
+let currentPriceVendor = "";
+
+async function initVendorPricePage() {
+  document.getElementById('vpViewVendorList').classList.remove('hidden');
+  document.getElementById('vpViewDetail').classList.add('hidden');
+  
+  const tbody = document.getElementById('vpVendorTableBody');
+  tbody.innerHTML = '<tr><td colspan="4" class="text-center p-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-2 block"></i>Memuat Database Harga Vendor...</td></tr>';
+
+  try {
+    const { data, error } = await supabaseClient.from('vendor_prices').select('*').order('id', { ascending: false });
+    if (error) throw error;
+    vendorPrices = data || [];
+    renderVendorPriceList();
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center p-6 text-red-400">Eror: ${err.message}</td></tr>`;
+  }
+}
+
+function renderVendorPriceList() {
+  const query = (document.getElementById('vpSearchInput').value || '').toLowerCase();
+  const tbody = document.getElementById('vpVendorTableBody');
+  
+  // Ambil list dari tabel Master Vendors
+  let vendors = masterVendors.map(v => v.vendorName).filter(name => name && name !== '-');
+  
+  // Sort & Filter
+  vendors = [...new Set(vendors)].sort();
+  const filteredVendors = vendors.filter(v => v.toLowerCase().includes(query));
+
+  if (filteredVendors.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center p-6 text-slate-400">Tidak ada vendor ditemukan. (Pastikan Anda sudah mengisi Master Vendor)</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filteredVendors.map((vendorName, i) => {
+    const routeCount = vendorPrices.filter(p => p.vendor_name === vendorName).length;
+    return `
+      <tr class="hover:bg-teal-50/50 transition">
+        <td class="p-3.5 text-center font-medium text-slate-500">${i + 1}.</td>
+        <td class="p-3.5 font-extrabold text-slate-800">${vendorName}</td>
+        <td class="p-3.5 text-center">
+          <span class="${routeCount > 0 ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-500'} px-2.5 py-1 rounded-full text-xs font-bold">
+            ${routeCount} Rute Terdaftar
+          </span>
+        </td>
+        <td class="p-3.5 text-center">
+          <button onclick="openVendorPriceDetail('${vendorName.replace(/'/g, "\\'")}')" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow transition">
+            <i class="fa-solid fa-list-check mr-1"></i> Kelola Harga Modal
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openVendorPriceDetail(vendorName) {
+  currentPriceVendor = vendorName;
+  document.getElementById('vpDetailTitle').innerText = `Harga Modal - ${vendorName}`;
+  document.getElementById('vpViewVendorList').classList.add('hidden');
+  document.getElementById('vpViewDetail').classList.remove('hidden');
+  renderVendorPriceDetailTable();
+}
+
+function closeVendorPriceDetail() {
+  currentPriceVendor = "";
+  document.getElementById('vpViewDetail').classList.add('hidden');
+  document.getElementById('vpViewVendorList').classList.remove('hidden');
+  renderVendorPriceList();
+}
+
+function renderVendorPriceDetailTable() {
+  const tbody = document.getElementById('vpDetailTableBody');
+  const vPrices = vendorPrices.filter(p => p.vendor_name === currentPriceVendor);
+
+  if (vPrices.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400 font-medium">Belum ada rute harga modal untuk vendor ini. Klik tombol Import atau +</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = vPrices.map((p, i) => `
+    <tr class="hover:bg-slate-50 transition">
+      <td class="p-3 text-center font-medium text-slate-500">${i + 1}.</td>
+      <td class="p-3 font-bold text-slate-800">${p.origin}</td>
+      <td class="p-3 font-bold text-slate-800">${p.destination}</td>
+      <td class="p-3 text-center text-slate-600"><span class="bg-slate-100 px-2 py-1 rounded text-[10px] uppercase">${p.service}</span></td>
+      <td class="p-3 text-right font-extrabold text-rose-700">Rp ${Number(p.price).toLocaleString('id-ID')}</td>
+      <td class="p-3 text-center">
+        <div class="flex items-center justify-center gap-1.5">
+          <button onclick="openModalEditVp(${p.id})" title="Edit" class="bg-cyan-500 hover:bg-cyan-600 text-white p-1.5 rounded-md text-xs transition shadow-sm"><i class="fa-solid fa-pen-to-square"></i></button>
+          <button onclick="deleteVp(${p.id}, '${p.origin}', '${p.destination}')" title="Hapus" class="bg-rose-500 hover:bg-rose-600 text-white p-1.5 rounded-md text-xs transition shadow-sm"><i class="fa-solid fa-trash-can"></i></button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openModalAddVp() {
+  document.getElementById('formVp').reset();
+  document.getElementById('vpIdInput').value = "";
+  document.getElementById('vpVendorInput').value = currentPriceVendor;
+  document.getElementById('modalVpTitle').innerHTML = '<i class="fa-solid fa-tag mr-2"></i>Tambah Harga Modal';
+  openModal('modalVp');
+}
+
+function openModalEditVp(id) {
+  const p = vendorPrices.find(item => item.id === id);
+  if (!p) return;
+  document.getElementById('vpIdInput').value = p.id;
+  document.getElementById('vpVendorInput').value = p.vendor_name;
+  document.getElementById('vpOriginInput').value = p.origin;
+  document.getElementById('vpDestInput').value = p.destination;
+  document.getElementById('vpServiceInput').value = p.service;
+  document.getElementById('vpAmountInput').value = p.price;
+  document.getElementById('modalVpTitle').innerHTML = `<i class="fa-solid fa-pen-to-square mr-2"></i>Edit Harga Modal`;
+  openModal('modalVp');
+}
+
+async function submitVpForm(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnSaveVp');
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+
+  const id = document.getElementById('vpIdInput').value;
+  const dataObj = {
+    vendor_name: document.getElementById('vpVendorInput').value,
+    origin: document.getElementById('vpOriginInput').value.toUpperCase(),
+    destination: document.getElementById('vpDestInput').value.toUpperCase(),
+    service: document.getElementById('vpServiceInput').value.toUpperCase() || '-',
+    price: Number(document.getElementById('vpAmountInput').value) || 0
+  };
+
+  try {
+    if (id) {
+      const { error } = await supabaseClient.from('vendor_prices').update(dataObj).eq('id', id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabaseClient.from('vendor_prices').insert([dataObj]);
+      if (error) throw error;
+    }
+    const { data: newData } = await supabaseClient.from('vendor_prices').select('*').order('id', { ascending: false });
+    vendorPrices = newData || [];
+    closeModal('modalVp');
+    renderVendorPriceDetailTable();
+  } catch (err) {
+    alert("Gagal menyimpan harga: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `Simpan Harga`;
+  }
+}
+
+async function deleteVp(id, origin, dest) {
+  if (!confirm(`Hapus harga modal rute ${origin} ke ${dest}?`)) return;
+  try {
+    const { error } = await supabaseClient.from('vendor_prices').delete().eq('id', id);
+    if (error) throw error;
+    vendorPrices = vendorPrices.filter(p => p.id !== id);
+    renderVendorPriceDetailTable();
+  } catch (err) {
+    alert("Gagal menghapus: " + err.message);
+  }
+}
+
+function exportVpToExcel() {
+  if (!currentPriceVendor) return;
+  const vPrices = vendorPrices.filter(p => p.vendor_name === currentPriceVendor);
+  
+  const excelRows = vPrices.length > 0 ? vPrices.map((p, index) => ({
+    "No": index + 1,
+    "Origin": p.origin || '',
+    "Destination": p.destination || '',
+    "Service": p.service || 'REGULER',
+    "Harga_Modal": Number(p.price) || 0
+  })) : [{ "No": 1, "Origin": "JAKARTA", "Destination": "SURABAYA", "Service": "REGULER", "Harga_Modal": 12000 }]; 
+
+  const worksheet = XLSX.utils.json_to_sheet(excelRows);
+  worksheet['!cols'] = [{ wch: 5 }, { wch: 25 }, { wch: 30 }, { wch: 15 }, { wch: 15 }];
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Harga_Modal_Vendor");
+
+  const safeName = currentPriceVendor.replace(/[^a-zA-Z0-9]/g, '_');
+  const today = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(workbook, `HargaModal_${safeName}_${today}.xlsx`);
+}
+
+async function handleImportVpExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (!currentPriceVendor) {
+    alert("Vendor tidak valid.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json_data = XLSX.utils.sheet_to_json(worksheet);
+
+      if (json_data.length === 0) { alert("File Excel kosong."); return; }
+
+      const tbody = document.getElementById('vpDetailTableBody');
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-2 block"></i>Mengimpor Harga Modal...</td></tr>';
+
+      const payload = [];
+      json_data.forEach(row => {
+        const origin = row['Origin'] || row['ORIGIN'] || row['Asal'];
+        const dest = row['Destination'] || row['DESTINATION'] || row['Tujuan'];
+        const service = row['Service'] || row['SERVICE'] || 'REGULER';
+        const price = row['Harga_Modal'] || row['Harga Modal'] || row['Harga'] || row['Price'] || 0;
+
+        if (origin && dest) {
+          payload.push({
+            vendor_name: currentPriceVendor,
+            origin: String(origin).trim().toUpperCase(),
+            destination: String(dest).trim().toUpperCase(),
+            service: String(service).trim().toUpperCase(),
+            price: Number(price) || 0
+          });
+        }
+      });
+
+      if (payload.length === 0) {
+        alert("Gagal membaca Excel. Pastikan terdapat kolom: 'Origin', 'Destination', dan 'Harga_Modal'.");
+        renderVendorPriceDetailTable();
+        return;
+      }
+
+      const { error } = await supabaseClient.from('vendor_prices').insert(payload);
+      if (error) throw error;
+
+      const { data: newData } = await supabaseClient.from('vendor_prices').select('*').order('id', { ascending: false });
+      vendorPrices = newData || [];
+      
+      alert(`Sukses! ${payload.length} harga modal ditambahkan untuk ${currentPriceVendor}.`);
+      renderVendorPriceDetailTable();
+    } catch (err) {
+      alert("Gagal mengimpor: " + err.message);
+      renderVendorPriceDetailTable();
+    } finally {
+      event.target.value = "";
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
