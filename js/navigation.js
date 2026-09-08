@@ -15,14 +15,14 @@ function toggleSubmenu(submenuId) {
 
 function autoOpenParentSubmenu(pageId) {
   const allSubmenus = ['submenuMaster', 'submenuInvoice', 'submenuSystem'];
-  
+
   const childParentMap = {
     'vendorPage': 'submenuMaster',
     'clientPage': 'submenuMaster',
     'driverPage': 'submenuMaster',
     'pricePage': 'submenuMaster',
-    'hubPage': 'submenuMaster'
     'vendorPricePage': 'submenuMaster',
+    'hubPage': 'submenuMaster',
     'publishInvoicePage': 'submenuInvoice',
     'proformaInvoicePage': 'submenuInvoice',
     'createInvoicePage': 'submenuInvoice',
@@ -34,9 +34,9 @@ function autoOpenParentSubmenu(pageId) {
   allSubmenus.forEach(submenuId => {
     const submenu = document.getElementById(submenuId);
     const icon = document.getElementById('icon-' + submenuId);
-    
+
     if (!submenu || !icon) return;
-    
+
     if (submenuId === parentIdToOpen) {
       submenu.classList.remove('hidden');
       icon.classList.add('rotate-180');
@@ -92,9 +92,9 @@ function switchPage(pageId) {
     document.getElementById('pageTitle').innerText = 'Master Driver';
     loadDriversTable();
   } else if (pageId === 'pricePage') {
-    document.getElementById('pageTitle').innerText = 'Master Price';
+    document.getElementById('pageTitle').innerText = 'Master Price (Client)';
     initPricePage();
-  } else if (pageId === 'vendorPricePage') { // <-- TAMBAHKAN BLOK INI
+  } else if (pageId === 'vendorPricePage') {
     document.getElementById('pageTitle').innerText = 'Master Price (Vendor)';
     initVendorPricePage();
   } else if (pageId === 'hubPage') {
