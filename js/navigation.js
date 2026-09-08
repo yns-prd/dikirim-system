@@ -21,12 +21,12 @@ function autoOpenParentSubmenu(pageId) {
     'clientPage': 'submenuMaster',
     'driverPage': 'submenuMaster',
     'pricePage': 'submenuMaster',
+    'hubPage': 'submenuMaster'
     'vendorPricePage': 'submenuMaster',
     'publishInvoicePage': 'submenuInvoice',
     'proformaInvoicePage': 'submenuInvoice',
     'createInvoicePage': 'submenuInvoice',
     'userSettingPage': 'submenuSystem'
-    'hubPage': 'submenuMaster'
   };
 
   const parentIdToOpen = childParentMap[pageId];
