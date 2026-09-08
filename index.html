@@ -96,6 +96,9 @@
             <a href="#" id="nav-vendorPricePage" onclick="switchPage('vendorPricePage')" class="nav-item flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
               <i class="fa-solid fa-money-bill-transfer w-4 text-teal-400"></i> Price Vendor
             </a>
+            <a href="#" id="nav-hubPage" onclick="switchPage('hubPage')" class="nav-item flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition">
+              <i class="fa-solid fa-map-location-dot w-4 text-cyan-400"></i> Hub (Kota)
+            </a>
           </div>
         </div>
 
@@ -830,6 +833,70 @@
         </div>
       </div>
 
+      <!-- ================= PAGE MASTER HUB (KOTA & TLC) ================= -->
+      <div id="hubPage" class="page-content hidden space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="bg-cyan-800 text-white p-4 px-6 flex justify-between items-center shadow-md">
+            <div class="flex items-center gap-2 font-bold text-lg">
+              <i class="fa-solid fa-map-location-dot text-amber-300"></i> Master Hub (Kota & Kode TLC)
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="file" id="importHubExcel" class="hidden" accept=".xlsx, .xls" onchange="handleImportHubExcel(event)">
+              <button onclick="document.getElementById('importHubExcel').click()" class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-import"></i> Import
+              </button>
+              <button onclick="exportHubToExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-excel"></i> Export
+              </button>
+              <button onclick="openModalAddHub()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 w-9 h-9 rounded-full flex items-center justify-center font-bold text-lg shadow transition ml-2">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+          <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+            <input type="text" id="hubSearchInput" onkeyup="filterHubTable()" placeholder="Cari nama kota atau kode TLC..." class="w-64 pl-3 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-cyan-500">
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+                <tr>
+                  <th class="p-3.5 w-12 text-center">#</th>
+                  <th class="p-3.5">Nama Kota / Hub</th>
+                  <th class="p-3.5 text-center">Kode TLC</th>
+                  <th class="p-3.5 text-center w-28">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="hubTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL ADD / EDIT HUB -->
+      <div id="modalHub" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-100">
+          <div class="bg-cyan-800 text-white p-4 px-6 flex justify-between items-center">
+            <h3 id="modalHubTitle" class="font-bold text-base"><i class="fa-solid fa-map-pin mr-2"></i>Tambah Hub Kota Baru</h3>
+            <button onclick="closeModal('modalHub')" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <form id="formHub" onsubmit="submitHubForm(event)" class="p-6 space-y-4">
+            <input type="hidden" id="hubIdInput">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Kota / Destination *</label>
+              <input type="text" id="hubCityInput" required placeholder="Contoh: SURABAYA" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-cyan-500 outline-none uppercase">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kode TLC (3-4 Huruf) *</label>
+              <input type="text" id="hubTlcInput" required maxlength="10" placeholder="Contoh: SUB" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-cyan-900 focus:ring-2 focus:ring-cyan-500 outline-none uppercase">
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+              <button type="button" onclick="closeModal('modalHub')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">Batal</button>
+              <button type="submit" id="btnSaveHub" class="px-5 py-2 bg-cyan-800 hover:bg-cyan-900 text-white rounded-xl text-xs font-bold shadow-md transition">Simpan Hub</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
       <!-- MODAL ADD / EDIT VENDOR PRICE -->
       <div id="modalVp" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100">
@@ -953,11 +1020,11 @@
             <div class="flex gap-1">
               <div class="w-1/3">
                 <label class="font-bold text-slate-600 block">TLC</label>
-                <input type="text" value="JKT" readonly class="w-full p-1.5 bg-slate-100 border text-center font-bold">
+                <input type="text" id="addOriginTlc" value="JKT" readonly class="w-full p-1.5 bg-slate-100 border text-center font-bold">
               </div>
               <div class="w-2/3">
                 <label class="font-bold text-slate-600 block">ASAL *</label>
-                <input type="text" id="addOrigin" value="JAKARTA" required class="w-full p-1.5 bg-slate-800 text-white font-bold rounded uppercase">
+                <input type="text" id="addOrigin" list="hubCityList" oninput="lookupTlcCode('addOrigin', 'addOriginTlc')" value="JAKARTA" required class="w-full p-1.5 bg-slate-800 text-white font-bold rounded uppercase">
               </div>
             </div>
             <div>
@@ -971,11 +1038,11 @@
             <div class="flex gap-1">
               <div class="w-1/3">
                 <label class="font-bold text-slate-600 block">TLC</label>
-                <input type="text" id="addDestTlc" placeholder="TLC" class="w-full p-1.5 bg-slate-100 border text-center font-bold">
+                <input type="text" id="addDestTlc" placeholder="TLC" readonly class="w-full p-1.5 bg-slate-100 border text-center font-bold">
               </div>
               <div class="w-2/3">
                 <label class="font-bold text-slate-600 block">TUJUAN *</label>
-                <input type="text" id="addDestination" required placeholder="SURABAYA..." class="w-full p-1.5 border border-slate-300 font-bold rounded uppercase">
+                <input type="text" id="addDestination" list="hubCityList" oninput="lookupTlcCode('addDestination', 'addDestTlc')" required placeholder="Ketik Kota Tujuan..." class="w-full p-1.5 border border-slate-300 font-bold rounded uppercase">
               </div>
             </div>
             <div>
@@ -1236,11 +1303,11 @@
             <div class="flex gap-1">
               <div class="w-1/3">
                 <label class="font-bold text-slate-600 block">TLC</label>
-                <input type="text" id="editOriginTlc" value="JKT" readonly class="w-full p-1.5 bg-slate-100 border text-center font-bold">
+                <input type="text" id="editOriginTlc" readonly class="w-full p-1.5 bg-slate-100 border text-center font-bold">
               </div>
               <div class="w-2/3">
                 <label class="font-bold text-slate-600 block">ASAL *</label>
-                <input type="text" id="editOrigin" required class="w-full p-1.5 bg-slate-800 text-white font-bold rounded uppercase">
+                <input type="text" id="editOrigin" list="hubCityList" oninput="lookupTlcCode('editOrigin', 'editOriginTlc')" required class="w-full p-1.5 bg-slate-800 text-white font-bold rounded uppercase">
               </div>
             </div>
             <div>
@@ -1254,11 +1321,11 @@
             <div class="flex gap-1">
               <div class="w-1/3">
                 <label class="font-bold text-slate-600 block">TLC</label>
-                <input type="text" id="editDestTlc" placeholder="TLC" class="w-full p-1.5 bg-slate-100 border text-center font-bold">
+                <input type="text" id="editDestTlc" readonly class="w-full p-1.5 bg-slate-100 border text-center font-bold">
               </div>
               <div class="w-2/3">
                 <label class="font-bold text-slate-600 block">TUJUAN *</label>
-                <input type="text" id="editDestination" required class="w-full p-1.5 border border-slate-300 font-bold rounded uppercase">
+                <input type="text" id="editDestination" list="hubCityList" oninput="lookupTlcCode('editDestination', 'editDestTlc')" required class="w-full p-1.5 border border-slate-300 font-bold rounded uppercase">
               </div>
             </div>
             <div>
@@ -1748,6 +1815,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+  <datalist id="hubCityList"></datalist>
   <!-- MODULAR SCRIPTS (WAJIB BERURUTAN) -->
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
