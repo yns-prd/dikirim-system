@@ -1079,3 +1079,206 @@ async function handleImportVpExcel(event) {
   };
   reader.readAsArrayBuffer(file);
 }
+
+// ==================== MASTER HUB (KOTA & TLC) ====================
+let masterHubs = [];
+
+async function initHubPage() {
+  const tbody = document.getElementById('hubTableBody');
+  tbody.innerHTML = '<tr><td colspan="4" class="text-center p-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-2 block"></i>Memuat Database Hub...</td></tr>';
+
+  try {
+    const { data, error } = await supabaseClient.from('master_hubs').select('*').order('city_name', { ascending: true });
+    if (error) throw error;
+    masterHubs = data || [];
+    
+    renderHubTable(masterHubs);
+    updateHubDatalist();
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center p-6 text-red-400">Eror: ${err.message}</td></tr>`;
+  }
+}
+
+function renderHubTable(data) {
+  const tbody = document.getElementById('hubTableBody');
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center p-8 text-slate-400 font-medium">Belum ada data Hub Kota. Klik Import / tombol + untuk menambah.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map((h, i) => `
+    <tr class="hover:bg-slate-50 transition">
+      <td class="p-3 text-center font-medium text-slate-500">${i + 1}.</td>
+      <td class="p-3 font-extrabold text-slate-800">${h.city_name}</td>
+      <td class="p-3 text-center"><span class="bg-cyan-100 text-cyan-900 px-2.5 py-1 rounded font-black text-xs">${h.tlc_code}</span></td>
+      <td class="p-3 text-center">
+        <div class="flex items-center justify-center gap-1.5">
+          <button onclick="openModalEditHub(${h.id})" title="Edit" class="bg-cyan-500 hover:bg-cyan-600 text-white p-1.5 rounded-md text-xs transition shadow-sm"><i class="fa-solid fa-pen-to-square"></i></button>
+          <button onclick="deleteHub(${h.id}, '${h.city_name}')" title="Hapus" class="bg-rose-500 hover:bg-rose-600 text-white p-1.5 rounded-md text-xs transition shadow-sm"><i class="fa-solid fa-trash-can"></i></button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterHubTable() {
+  const query = (document.getElementById('hubSearchInput').value || '').toLowerCase();
+  const filtered = masterHubs.filter(h => 
+    (h.city_name || '').toLowerCase().includes(query) ||
+    (h.tlc_code || '').toLowerCase().includes(query)
+  );
+  renderHubTable(filtered);
+}
+
+function updateHubDatalist() {
+  const dl = document.getElementById('hubCityList');
+  if (!dl) return;
+  dl.innerHTML = masterHubs.map(h => `<option value="${h.city_name}">${h.tlc_code}</option>`).join('');
+}
+
+function lookupTlcCode(cityInputId, tlcInputId) {
+  const val = (document.getElementById(cityInputId)?.value || '').trim().toUpperCase();
+  const tlcInput = document.getElementById(tlcInputId);
+  if (!tlcInput) return;
+
+  const match = masterHubs.find(h => h.city_name.toUpperCase() === val);
+  if (match) {
+    tlcInput.value = match.tlc_code;
+  }
+}
+
+function openModalAddHub() {
+  document.getElementById('formHub').reset();
+  document.getElementById('hubIdInput').value = "";
+  document.getElementById('modalHubTitle').innerHTML = '<i class="fa-solid fa-map-pin mr-2"></i>Tambah Hub Kota Baru';
+  openModal('modalHub');
+}
+
+function openModalEditHub(id) {
+  const h = masterHubs.find(item => item.id === id);
+  if (!h) return;
+  document.getElementById('hubIdInput').value = h.id;
+  document.getElementById('hubCityInput').value = h.city_name;
+  document.getElementById('hubTlcInput').value = h.tlc_code;
+  document.getElementById('modalHubTitle').innerHTML = `<i class="fa-solid fa-pen-to-square mr-2"></i>Edit Hub ${h.city_name}`;
+  openModal('modalHub');
+}
+
+async function submitHubForm(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnSaveHub');
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+
+  const id = document.getElementById('hubIdInput').value;
+  const dataObj = {
+    city_name: document.getElementById('hubCityInput').value.toUpperCase().trim(),
+    tlc_code: document.getElementById('hubTlcInput').value.toUpperCase().trim()
+  };
+
+  try {
+    if (id) {
+      const { error } = await supabaseClient.from('master_hubs').update(dataObj).eq('id', id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabaseClient.from('master_hubs').insert([dataObj]);
+      if (error) throw error;
+    }
+
+    const { data: newData } = await supabaseClient.from('master_hubs').select('*').order('city_name', { ascending: true });
+    masterHubs = newData || [];
+    
+    closeModal('modalHub');
+    renderHubTable(masterHubs);
+    updateHubDatalist();
+  } catch (err) {
+    alert("Gagal menyimpan hub: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `Simpan Hub`;
+  }
+}
+
+async function deleteHub(id, cityName) {
+  if (!confirm(`Hapus hub kota '${cityName}'?`)) return;
+  try {
+    const { error } = await supabaseClient.from('master_hubs').delete().eq('id', id);
+    if (error) throw error;
+    masterHubs = masterHubs.filter(h => h.id !== id);
+    renderHubTable(masterHubs);
+    updateHubDatalist();
+  } catch (err) {
+    alert("Gagal menghapus: " + err.message);
+  }
+}
+
+function exportHubToExcel() {
+  const excelRows = masterHubs.length > 0 ? masterHubs.map((h, index) => ({
+    "No": index + 1,
+    "City_Name": h.city_name || '',
+    "TLC_Code": h.tlc_code || ''
+  })) : [{ "No": 1, "City_Name": "SURABAYA", "TLC_Code": "SUB" }]; 
+
+  const worksheet = XLSX.utils.json_to_sheet(excelRows);
+  worksheet['!cols'] = [{ wch: 5 }, { wch: 30 }, { wch: 15 }];
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Master_Hub");
+
+  const today = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(workbook, `Master_Hub_Kota_${today}.xlsx`);
+}
+
+async function handleImportHubExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json_data = XLSX.utils.sheet_to_json(worksheet);
+
+      if (json_data.length === 0) { alert("File Excel kosong."); return; }
+
+      const tbody = document.getElementById('hubTableBody');
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center p-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-lg mb-2 block"></i>Mengimpor Master Hub...</td></tr>';
+
+      const payload = [];
+      json_data.forEach(row => {
+        const city = row['City_Name'] || row['City Name'] || row['Kota'] || row['Destination'];
+        const tlc = row['TLC_Code'] || row['TLC Code'] || row['TLC'] || row['Kode TLC'];
+
+        if (city && tlc) {
+          payload.push({
+            city_name: String(city).trim().toUpperCase(),
+            tlc_code: String(tlc).trim().toUpperCase()
+          });
+        }
+      });
+
+      if (payload.length === 0) {
+        alert("Gagal membaca Excel. Pastikan terdapat kolom: 'City_Name' dan 'TLC_Code'.");
+        renderHubTable(masterHubs);
+        return;
+      }
+
+      const { error } = await supabaseClient.from('master_hubs').insert(payload);
+      if (error) throw error;
+
+      const { data: newData } = await supabaseClient.from('master_hubs').select('*').order('city_name', { ascending: true });
+      masterHubs = newData || [];
+      
+      alert(`Sukses! ${payload.length} Hub Kota berhasil ditambahkan.`);
+      renderHubTable(masterHubs);
+      updateHubDatalist();
+    } catch (err) {
+      alert("Gagal mengimpor: " + err.message);
+      renderHubTable(masterHubs);
+    } finally {
+      event.target.value = "";
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
