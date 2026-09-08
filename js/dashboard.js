@@ -478,25 +478,18 @@ function submitAddOrder(e) {
     });
 }
 
+// ==================== UPDATE FUNGSI BUKA MODAL EDIT ====================
 function openUpdateModal(rowIndex) {
   const item = rawData.find(d => Number(d.rowIndex) === Number(rowIndex));
   if (!item) return;
 
-  // Header & Ringkasan Atas
   document.getElementById('editRowIndex').value = item.rowIndex;
   document.getElementById('editAwbNumber').value = item.awbNumber || '-';
   document.getElementById('editDoCustomer').value = item.doCustomer || '';
   document.getElementById('editOrigin').value = item.origin || 'JAKARTA';
   document.getElementById('editDestination').value = item.destination || '';
-  
-  const formattedCharge = 'Rp ' + (Number(item.charge) || 0).toLocaleString('id-ID');
-  document.getElementById('lblTarifDasar').innerText = formattedCharge;
-  document.getElementById('lblTarifTotal').innerText = formattedCharge;
-  document.getElementById('lblTotalBayar').innerText = formattedCharge;
-  document.getElementById('lblVendorBy').innerText = item.vendorBy || '-';
-  document.getElementById('lblInvoiceNo').innerText = item.invoiceNumber || '-';
 
-  // Informasi Pengirim & Penerima
+  // Isi data pengirim & penerima
   document.getElementById('editClientName').value = item.clientName || '';
   document.getElementById('editConsigneeName').value = item.consigneeName || '';
   document.getElementById('editConsigneeAddress').value = item.consigneeAddress || '';
@@ -505,19 +498,33 @@ function openUpdateModal(rowIndex) {
   document.getElementById('editColy').value = item.coly || 1;
   document.getElementById('editWeight').value = item.weight || 1;
 
-  // Informasi Service & Biaya
+  // Service & Biaya
   document.getElementById('editService').value = item.service || 'REGULER';
-  document.getElementById('editCharge').value = item.charge || 0;
+  document.getElementById('editCharge').value = item.charge || 0; // Menampilkan Tarif Dasar
+  document.getElementById('editChargePacking').value = item.chargePacking || 0;
+  document.getElementById('editChargeInsurance').value = item.chargeInsurance || 0;
+  document.getElementById('editChargeOther').value = item.chargeOther || 0;
+
   document.getElementById('editOrderDate').value = item.orderDate || '';
   document.getElementById('editTrackTrace').value = item.trackTrace || 'New Order';
   document.getElementById('editVendorBy').value = item.vendorBy || '';
+
+  document.getElementById('lblVendorBy').innerText = item.vendorBy || '-';
+  document.getElementById('lblInvoiceNo').innerText = item.invoiceNumber || '-';
+
+  // Kalkulasi & Tampilkan Ringkasan Tarif Atas
+  calculateModalTotals('edit');
 
   document.getElementById('editModalTitle').innerText = `Edit Data Order - ${item.awbNumber}`;
   openModal('modalUpdateOrder');
 }
 
+// ==================== UPDATE SUBMIT EDIT ORDER ====================
 function submitUpdateOrder(e) {
   e.preventDefault();
+  
+  const calc = calculateModalTotals('edit');
+
   const formData = {
     rowIndex: document.getElementById('editRowIndex').value,
     doCustomer: document.getElementById('editDoCustomer').value,
@@ -528,9 +535,16 @@ function submitUpdateOrder(e) {
     origin: document.getElementById('editOrigin').value,
     destination: document.getElementById('editDestination').value,
     service: document.getElementById('editService').value,
-    weight: document.getElementById('editWeight').value,
+    weight: calc.weight,
     coly: document.getElementById('editColy').value,
-    charge: document.getElementById('editCharge').value,
+    
+    // Kirim Tarif Total sebagai Tagihan Utama ke Database
+    charge: calc.tarifTotal,
+    tarifDasar: calc.tarifDasar,
+    chargePacking: calc.packing,
+    chargeInsurance: calc.insurance,
+    chargeOther: calc.other,
+    
     vendorBy: document.getElementById('editVendorBy').value
   };
 
@@ -553,6 +567,75 @@ function submitUpdateOrder(e) {
     .catch(err => {
       btn.disabled = false;
       btn.innerHTML = `Simpan Perubahan`;
+      alert('Eror: ' + (err.message || err));
+    });
+}
+
+// ==================== UPDATE SUBMIT ADD ORDER ====================
+function submitAddOrder(e) {
+  e.preventDefault();
+
+  const clientSelected = document.getElementById('addClientSelect').value;
+  const senderNameVal = document.getElementById('addSenderName').value;
+
+  if (!clientSelected && !senderNameVal) {
+    alert("Silakan pilih Client atau isi Nama Pengirim!");
+    return;
+  }
+
+  const calc = calculateModalTotals('add');
+
+  const formData = {
+    doCustomer: document.getElementById('addDoCustomer').value,
+    awbNumber: document.getElementById('addAwbNumber').value,
+    clientName: clientSelected || senderNameVal,
+    senderName: senderNameVal,
+    senderAddress: document.getElementById('addSenderAddress').value,
+    senderPic: document.getElementById('addSenderPic').value,
+    consigneeName: document.getElementById('addConsigneeName').value,
+    consigneeAddress: document.getElementById('addConsigneeAddress').value,
+    consigneePic: document.getElementById('addConsigneePic').value,
+    origin: document.getElementById('addOrigin').value,
+    destination: document.getElementById('addDestination').value,
+    service: document.getElementById('addService').value,
+    paymentType: document.getElementById('addPaymentType').value,
+    weight: calc.weight,
+    coly: document.getElementById('addColy').value,
+    
+    // Kirim Tarif Total sebagai Tagihan Utama ke Database
+    charge: calc.tarifTotal,
+    tarifDasar: calc.tarifDasar,
+    chargePacking: calc.packing,
+    chargeInsurance: calc.insurance,
+    chargeOther: calc.other,
+
+    podReturn: document.getElementById('addPodReturn').value,
+    orderDate: document.getElementById('addOrderDate').value,
+    vendorBy: document.getElementById('addVendorSelect').value,
+    driverBy: document.getElementById('addDriverSelect').value,
+    note: document.getElementById('addNote').value
+  };
+
+  const btn = document.getElementById('btnSaveAddOrder');
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+
+  apiPost('addOrder', { formData: formData })
+    .then(res => {
+      btn.disabled = false;
+      btn.innerHTML = `Simpan Order Baru`;
+      if (res.status === 'success') {
+        alert(res.message);
+        closeModal('modalAddOrder');
+        document.getElementById('formAddOrder').reset();
+        loadData();
+      } else {
+        alert('Gagal: ' + res.message);
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = `Simpan Order Baru`;
       alert('Eror: ' + (err.message || err));
     });
 }
@@ -642,4 +725,22 @@ function autoFillAddSenderInfo(clientName) {
   if (addrInput) addrInput.value = clientObj ? (clientObj.address || '') : '';
 }
 
+// ==================== FUNGSI HITUNG OTOMATIS TARIF TOTAL ====================
+function calculateModalTotals(prefix) {
+  const tarifDasar = Number(document.getElementById(prefix + 'Charge')?.value) || 0;
+  const weight = Number(document.getElementById(prefix + 'Weight')?.value) || 1;
+  const packing = Number(document.getElementById(prefix + 'ChargePacking')?.value) || 0;
+  const insurance = Number(document.getElementById(prefix + 'ChargeInsurance')?.value) || 0;
+  const other = Number(document.getElementById(prefix + 'ChargeOther')?.value) || 0;
 
+  // Rumus: (Tarif Dasar x Berat) + Packing + Insurance + Other
+  const tarifTotal = (tarifDasar * weight) + packing + insurance + other;
+
+  if (prefix === 'edit') {
+    document.getElementById('lblTarifDasar').innerText = 'Rp ' + tarifDasar.toLocaleString('id-ID');
+    document.getElementById('lblTarifTotal').innerText = 'Rp ' + tarifTotal.toLocaleString('id-ID');
+    document.getElementById('lblTotalBayar').innerText = 'Rp ' + tarifTotal.toLocaleString('id-ID');
+  }
+
+  return { tarifDasar, weight, packing, insurance, other, tarifTotal };
+}
