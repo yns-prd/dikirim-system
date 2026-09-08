@@ -1096,7 +1096,7 @@
                     <td class="p-1"><input type="number" id="addDimL" value="0" placeholder="L" class="w-full p-1 border text-center"></td>
                     <td class="p-1"><input type="number" id="addDimT" value="0" placeholder="T" class="w-full p-1 border text-center"></td>
                     <td class="p-1"><input type="number" id="addVVol" value="0" readonly class="w-full p-1 bg-slate-100 text-center"></td>
-                    <td class="p-1"><input type="number" id="addWeight" step="0.1" value="1" required class="w-full p-1 border text-center font-bold text-blue-900"></td>
+                    <td class="p-1"><input type="number" id="addWeight" step="0.1" value="1" oninput="calculateModalTotals('edit')" required class="w-full p-1 border text-center font-bold text-blue-900"></td>
                     <td class="p-1"><input type="number" id="addWCmp" value="1" readonly class="w-full p-1 bg-slate-100 text-center font-bold"></td>
                     <td class="p-1"><input type="text" id="addDeskripsi" placeholder="BOX / DUS / CARTON" class="w-full p-1 border"></td>
                     <td class="p-1"><input type="text" id="addUnit" value="BOX" class="w-full p-1 border text-center font-bold"></td>
@@ -1140,20 +1140,20 @@
               <!-- BIAYA-BIAYA DETIL -->
               <div class="space-y-1.5 pt-2 border-t border-slate-200">
                 <div class="flex justify-between items-center">
-                  <span class="text-slate-600 font-semibold">Charge Tagihan (Rp) *</span>
-                  <input type="number" id="addCharge" value="0" required class="w-32 p-1 border font-bold text-right text-emerald-800 bg-emerald-50">
+                  <span class="text-slate-600 font-semibold">Tarif Dasar / Kg (Rp) *</span>
+                  <input type="number" id="addCharge" value="0" oninput="calculateModalTotals('edit')" required class="w-32 p-1 border font-bold text-right text-emerald-800 bg-emerald-50">
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-slate-600">Charge Packing</span>
-                  <input type="number" id="addChargePacking" value="0" class="w-32 p-1 border text-right">
+                  <input type="number" id="addChargePacking" value="0" oninput="calculateModalTotals('edit')" class="w-32 p-1 border text-right">
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-slate-600">Charge Insurance</span>
-                  <input type="number" id="addChargeInsurance" value="0" class="w-32 p-1 border text-right">
+                  <input type="number" id="addChargeInsurance" value="0" oninput="calculateModalTotals('edit')" class="w-32 p-1 border text-right">
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-slate-600">Charge Other</span>
-                  <input type="number" id="addChargeOther" value="0" class="w-32 p-1 border text-right">
+                  <input type="number" id="addChargeOther" value="0" oninput="calculateModalTotals('edit')" class="w-32 p-1 border text-right">
                 </div>
               </div>
 
@@ -1381,7 +1381,7 @@
                     <td class="p-1"><input type="number" id="editDimL" value="0" placeholder="L" class="w-full p-1 border text-center"></td>
                     <td class="p-1"><input type="number" id="editDimT" value="0" placeholder="T" class="w-full p-1 border text-center"></td>
                     <td class="p-1"><input type="number" id="editVVol" value="0" readonly class="w-full p-1 bg-slate-100 text-center"></td>
-                    <td class="p-1"><input type="number" id="editWeight" step="0.1" value="1" required class="w-full p-1 border text-center font-bold text-emerald-800"></td>
+                    <td class="p-1"><input type="number" id="editWeight" step="0.1" value="1" oninput="calculateModalTotals('edit') required class="w-full p-1 border text-center font-bold text-emerald-800"></td>
                     <td class="p-1"><input type="number" id="editWCmp" value="1" readonly class="w-full p-1 bg-slate-100 text-center font-bold"></td>
                     <td class="p-1"><input type="text" id="editDeskripsi" placeholder="BOX / DUS" class="w-full p-1 border"></td>
                     <td class="p-1"><input type="text" id="editUnit" value="BOX" class="w-full p-1 border text-center font-bold"></td>
@@ -1418,20 +1418,20 @@
 
               <div class="space-y-1.5 pt-2 border-t border-slate-200">
                 <div class="flex justify-between items-center">
-                  <span class="text-slate-600">Charge Tagihan (Rp) *</span>
-                  <input type="number" id="editCharge" required class="w-32 p-1 border font-bold text-right text-emerald-800">
+                  <span class="text-slate-600">Tarif Dasar / Kg (Rp) *</span>
+                  <input type="number" id="editCharge" value="0" oninput="calculateModalTotals('edit')" required class="w-32 p-1 border font-bold text-right text-emerald-800">
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-slate-600">Charge Packing</span>
-                  <input type="number" id="editChargePacking" value="0" class="w-32 p-1 border text-right">
+                  <input type="number" id="editChargePacking" value="0" oninput="calculateModalTotals('edit')" class="w-32 p-1 border text-right">
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-slate-600">Charge Insurance</span>
-                  <input type="number" id="editChargeInsurance" value="0" class="w-32 p-1 border text-right">
+                  <input type="number" id="editChargeInsurance" value="0" oninput="calculateModalTotals('edit')" class="w-32 p-1 border text-right">
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-slate-600">Charge Other</span>
-                  <input type="number" id="editChargeOther" value="0" class="w-32 p-1 border text-right">
+                  <input type="number" id="editChargeOther" value="0" oninput="calculateModalTotals('edit')" class="w-32 p-1 border text-right">
                 </div>
               </div>
 
