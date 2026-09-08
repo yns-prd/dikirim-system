@@ -62,6 +62,7 @@ function onDataLoaded(response) {
   renderPublishInvoiceTable();
   renderProformaInvoiceTable();
   initCreateInvoicePage();
+  initHubPage();
 }
 
 function buildSummaryFromRawData(dataList) {
