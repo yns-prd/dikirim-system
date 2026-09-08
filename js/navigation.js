@@ -26,6 +26,7 @@ function autoOpenParentSubmenu(pageId) {
     'proformaInvoicePage': 'submenuInvoice',
     'createInvoicePage': 'submenuInvoice',
     'userSettingPage': 'submenuSystem'
+    'hubPage': 'submenuMaster'
   };
 
   const parentIdToOpen = childParentMap[pageId];
@@ -96,5 +97,8 @@ function switchPage(pageId) {
   } else if (pageId === 'vendorPricePage') { // <-- TAMBAHKAN BLOK INI
     document.getElementById('pageTitle').innerText = 'Master Price (Vendor)';
     initVendorPricePage();
+  } else if (pageId === 'hubPage') {
+    document.getElementById('pageTitle').innerText = 'Master Hub (Kota & TLC)';
+    initHubPage();
   }
 }
